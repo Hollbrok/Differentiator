@@ -1,13 +1,57 @@
 #pragma once
 
-#define _CRT_SECURE_NO_WARNINGS
+/* Debug memory allocation support */
+#ifndef NDEBUG 
+#define _CRTDBG_MAP_ALLOC
+#include <crtdbg.h> 
+
+#define SetDbgMemHooks()                                           \
+  _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF | \
+  _CRTDBG_ALLOC_MEM_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))      
+
+static class __Dummy
+{
+public:
+	/* Class constructor */
+	__Dummy(VOID)
+	{
+		SetDbgMemHooks();
+	} /* End of '__Dummy' constructor */
+} __ooppss;
+#endif /* _DEBUG */ 
+
+#ifndef NDEBUG
+#  ifdef _CRTDBG_MAP_ALLOC 
+#    define new new(_NORMAL_BLOCK, __FILE__, __LINE__) 
+#  endif /* _CRTDBG_MAP_ALLOC */ 
+#endif /* _DEBUG */
+
+
+#define NDEBUG
+#ifndef NDEBUG
+#define VERIFICATION                                                           \
+{                                                                              \
+  if (verification()) {                                                        \
+    fprintf(stderr, "LINE: %d\nFILE:%s\nFUNC:%s"__LINE__, __FILE__, __func__); \
+    assert(0);                                                                 \
+  }                                                                            \
+}                                                                               
+#else
+#define VERIFICATION ;
+#endif /* _DEBUG */
 
 using TYPE = int;
 using VALUE = int;
 
+const int NUMBER_OF_VARIABLES = 10;
+const int MAX_NAME_SIZE = 10;
+
 struct Objects {
 	
 	struct Object* obj = nullptr;
+
+	char* variables_names[NUMBER_OF_VARIABLES] = {};
+
 	int number_of_objects = 0;
 };
 
@@ -26,11 +70,14 @@ enum TYPES
 	VARIABLE	= 4,
 };
 
-enum VALUES
+enum BRACKET_VALUES
 {
-	L_BRACKET_VAL	= 1,
-	R_BRACKET_VAL	= 2,
+	L_BRACKET_VAL = 1,
+	R_BRACKET_VAL = 2,
+};
 
+enum OPERATORS_VALUES
+{
 	OP_PLUS_VAL		= 3,
 	OP_MIN_VAL		= 4,
 	OP_TIMES_VAL	= 5,

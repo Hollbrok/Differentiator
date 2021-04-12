@@ -35,8 +35,12 @@ struct Objects* fill_structures(FILE* text)
 	
 	int obj_counter = 0;
 
-	printf("buffer = [%s]\n", buffer);
+	char* variables_names[NUMBER_OF_VARIABLES];
+	
+	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
+		variables_names[i] = new char[MAX_NAME_SIZE] {0};
 
+	printf("buffer = [%s]\n", buffer);
 
 	for (int i = 0; buffer[i] != '\0'; i++)
 	{
@@ -92,11 +96,35 @@ struct Objects* fill_structures(FILE* text)
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_PLUS_VAL;
 		}
-		else if (buffer[i] == 'x')
+		else if (isalpha(buffer[i]))
 		{
+
 			printf("VARIABLE\n");
 			obj[obj_counter].type_of_object = VARIABLE;
-			obj[obj_counter++].value = 666;
+			
+			char name[MAX_NAME_SIZE] = {};
+
+			int j = 0;
+			for (j; isalpha(buffer[i + j]); j++)
+				name[j] = buffer[i + j];
+
+			i += j - 1;
+
+			//if (find_variable_name(name, variables_names) != -1)
+			obj[obj_counter].value = find_variable_name(name, variables_names);
+			
+			if (obj[obj_counter].value == -1)
+			{
+				obj[obj_counter].value = find_place(variables_names);
+				//strncmp(variables_names[obj[obj_counter].value], name, strlen(name));
+				for (int counter = 0; counter < strlen(name); counter++)
+					(variables_names[obj[obj_counter].value])[counter] = name[counter];
+				printf("name = [%s]\n", name);
+				printf("obj[obj_counter].value = %d\n", obj[obj_counter].value);
+				printf("%%% variables_names[%d] = [%s]    %%%\n", obj[obj_counter].value, variables_names[obj[obj_counter].value]);
+			}
+			obj_counter++;
+			//obj[obj_counter++].value = 666;
 		}
 		else if (isdigit(buffer[i]))
 		{
@@ -122,7 +150,6 @@ struct Objects* fill_structures(FILE* text)
 	obj_counter;
 
 	printf("obj_counter = %d\n", obj_counter);
- 
 
 	delete[] buffer;
 	//delete[] obj;
@@ -131,6 +158,10 @@ struct Objects* fill_structures(FILE* text)
 
 	objs->obj = obj;
 	objs->number_of_objects = obj_counter;
+	
+	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
+		objs->variables_names[i] = variables_names[i];
+	//objs->variables_names = variables_names;
 
 	return objs;
 }
@@ -194,4 +225,28 @@ char* make_buffer(FILE* file)
 
 	//buffer[file_length - 1] = '\0';
 	return buffer;
+}
+
+int  find_variable_name(char name[MAX_NAME_SIZE], char* variables_names[NUMBER_OF_VARIABLES])
+{
+	//bool is_find = false;
+
+	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
+	{
+		//printf("name = [%s], ");
+		if (!strcmp(name, variables_names[i]))
+			return i;
+	}
+	return -1;
+}
+
+int find_place(char* variables_names[NUMBER_OF_VARIABLES])
+{
+	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
+	{
+		//printf("[%s]\n", variables_names[i]);
+		if (strlen(variables_names[i]) == 0)
+			return i;
+	}
+	return -1;
 }

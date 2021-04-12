@@ -14,7 +14,18 @@ int main(int argc, int argv[])
 
 	print_objects(objs);
 
+	
+	
 	delete[] objs->obj;
+	
+
+	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
+	{
+		//printf("p = %p", objs->variables_names[i]);
+		delete[] objs->variables_names[i];
+	}
+
 	delete[] objs;
+
 	return 0;
 }
