@@ -528,6 +528,7 @@ const char* get_value_of_object(struct Objects* objs, struct Object* obj)
 
 tree_element* tree::get_expression()
 {
+    printf("Total size is =  %d , cur_size = %d\n", objs_->number_of_objects, cur_size_);
     printf("get_express\n");
     tree_element* tmp_element_1 = nullptr; // new tree_element;
     
@@ -556,7 +557,8 @@ tree_element* tree::get_expression()
         printf("leave from no +/- . tmp_1 = [%d]\n", tmp_element_1->get_data()->value);
         //cur_size_++;
     }
-
+    if (cur_size_ >= objs_->number_of_objects)
+        return tmp_element_1;
     tree_element* tmp_element = new tree_element;
 
     do
@@ -757,7 +759,7 @@ tree_element* tree::get_pow()
     tree_element* tmp_element_1 = nullptr;
 
     tmp_element_1 = get_bracket(); 
-
+    //cur_size_++;
     //->set_left(get_bracket());
 
     if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && (objs_->obj[cur_size_].value == OP_POW_VAL)) // if   "^"
@@ -771,12 +773,17 @@ tree_element* tree::get_pow()
 
         cur_size_++;
         
+        printf("tmp_2 before get_expression\n");
+        tmp_element_2 = get_expression(); //->set_right(get_bracket());
+        printf("tmp_2 after get_expression\n");
 
-        tmp_element_2 = get_bracket(); //->set_right(get_bracket());
-    
         tmp_element->set_right(tmp_element_1);
         tmp_element->set_left(tmp_element_2);
-        
+
+        tmp_element_1->set_prev(tmp_element);
+        tmp_element_2->set_prev(tmp_element);
+
+
         printf("leave from get_pow (2)\n");
         return tmp_element;
     }
