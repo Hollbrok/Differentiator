@@ -75,7 +75,7 @@ struct Objects* fill_structures(FILE* text)
 		}
 		else if (buffer[i] == '*')
 		{
-			//printf("**********\n");
+			printf("**********\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_TIMES_VAL;
 		}

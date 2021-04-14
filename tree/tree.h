@@ -110,7 +110,7 @@ public:
 	//void fill_root();
 };
 
-class tree :tree_element
+class tree:tree_element
 {
 private:
 
@@ -134,6 +134,10 @@ public:
 
 	tree_element* add_to_right(tree_element* x, data_type number);
 	tree_element* add_to_left(tree_element* x, data_type number);
+
+	tree_element* add_to_left(tree_element* x, tree_element* new_element);
+	tree_element* add_to_right(tree_element* x, tree_element* new_element);
+
 
 	tree_element* get_root() { return root_; };
 
@@ -162,10 +166,11 @@ public:
 
 	tree_element* get_number();
 
+	
+
 };
 
 
-void print_all_elements(tree_element* tmp, FILE* dump);
 void print_all_elements_beauty(tree_element* tmp, FILE* dump);
 
 
@@ -175,6 +180,8 @@ char* make_buffer(const char* name_file);
 
 void free_all(tree_element* root);
 
+void print_all_elements(tree_element* tmp, FILE* dump, struct Objects* objs);
 
 const char* get_type_of_object(TYPE type);
+const char* get_value_of_object(struct Objects* objs, struct Object* obj);
 #endif // TREE_H_INCLUDED
