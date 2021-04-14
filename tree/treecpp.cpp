@@ -774,7 +774,7 @@ tree_element* tree::get_pow()
         cur_size_++;
         
         printf("tmp_2 before get_expression\n");
-        tmp_element_2 = get_expression(); //->set_right(get_bracket());
+        tmp_element_2 = get_pow(); //->set_right(get_bracket());
         printf("tmp_2 after get_expression\n");
 
         tmp_element->set_right(tmp_element_1);
