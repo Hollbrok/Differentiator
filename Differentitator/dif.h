@@ -15,3 +15,5 @@ char* make_buffer(FILE* file);
 int  find_variable_name(char name[MAX_NAME_SIZE], char* variables_names[NUMBER_OF_VARIABLES]);
 
 int find_place(char* variables_names[NUMBER_OF_VARIABLES]);
+
+void Objs_destructor(struct Objects* objs);

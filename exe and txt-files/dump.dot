@@ -1,0 +1,11 @@
+digraph differenciator {
+node [color = Red, fontname = Courier, style = filled, shape=record, fillcolor = purple]
+edge [color = Blue, style=dashed]
+"00F3D958" [label = "<f0> TYPE = [Number] | {<f1> left| <here> prev| right}| {<f2> [00000000]| [00000000]| [00000000]}",style = filled, fillcolor = red] 
+"00F3D918" -> "00F3D958" [label="yes", fontcolor=darkblue]
+"00F3D958" -> "00000000" [label="yes", fontcolor=darkblue]
+"00F3D8D8" [label = "<f0> TYPE = [Number] | {<f1> left| <here> prev| right}| {<f2> [00000000]| [00000000]| [00000000]}",style = filled, fillcolor = red] 
+"00F3D918" -> "00F3D8D8" [label="No", fontcolor=darkblue]
+"00F3D8D8" -> "00000000" [label="No", fontcolor=darkblue]
+"00F3D918" [label = "{<f0> TYPE = [Operator] | <here> [00F3D918]} | {<f1> right| <here> prev| left}| {<f2> [00F3D8D8]| [00000000]| [00F3D958]}",style = filled, fillcolor = red] 
+}

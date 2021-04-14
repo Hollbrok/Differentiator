@@ -10,11 +10,11 @@ struct Objects* fill_structures(FILE* text)
 
 	char* buffer = make_buffer(text); // !!! calloc memory by new char[..];
 
-	printf("buffer = [%s]\n", buffer);
-	printf("strlen = [%d]\n", strlen(buffer));
-	if(buffer[strlen(buffer)] == '\0')
-		printf("last is a zero\n");
-	else printf("last isNOT a  zero\n");
+	//printf("buffer = [%s]\n", buffer);
+	//printf("strlen = [%d]\n", strlen(buffer));
+	//if(buffer[strlen(buffer)] == '\0')
+		//printf("last is a zero\n");
+	//else printf("last isNOT a  zero\n");
 
 	int i = 0;
 	while (buffer[i] != '\0')
@@ -22,14 +22,15 @@ struct Objects* fill_structures(FILE* text)
 		//printf("[%c]", buffer[i]);
 		if (isspace(buffer[i]))
 		{
-			printf("[[%d]]\n", buffer[i]);
+			//printf("[[%d]]\n", buffer[i]);
 			space_counter++;
 			i++;
 		}
 		else i++;
 	}
-	printf("Number of spaces = %d\n", space_counter);
-	printf("Another symbols = %d\n", strlen(buffer) - space_counter);	// GOOD
+	//printf("Number of spaces = %d\n", space_counter);
+	//printf("Another symbols = %d\n", strlen(buffer) - space_counter);	// GOOD
+
 	struct Object* obj = new Object[strlen(buffer) - space_counter] ;	//(Object*) calloc(number_of_objects, sizeof(Object));
 	assert(obj && "Can't new[] memory for *obj");
 	
@@ -40,66 +41,66 @@ struct Objects* fill_structures(FILE* text)
 	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
 		variables_names[i] = new char[MAX_NAME_SIZE] {0};
 
-	printf("buffer = [%s]\n", buffer);
+	//printf("buffer = [%s]\n", buffer);
 
 	for (int i = 0; buffer[i] != '\0'; i++)
 	{
-		printf("i = %d\nbuffer[%d] = [%c]\n\n", i, i, buffer[i]);
+		//printf("i = %d\nbuffer[%d] = [%c]\n\n", i, i, buffer[i]);
 		if (isspace(buffer[i]))
 			continue;
 		else if (buffer[i] == ')')
 		{
-			printf("))))))))))))))))\n");
+			//printf("))))))))))))))))\n");
 			obj[obj_counter].type_of_object = BRACKET;
 			obj[obj_counter++].value = R_BRACKET_VAL;
 		}
 		else if (buffer[i] == '(')
 		{
-			printf("((((((((((((((\n");
+			//printf("((((((((((((((\n");
 			obj[obj_counter].type_of_object = BRACKET;
 			obj[obj_counter++].value = L_BRACKET_VAL;
 		}
 		else if (buffer[i] == '+')
 		{
-			printf("++++++++++++\n");
+			//printf("++++++++++++\n");
 			//printf("here buffer[%d] = [%c]\n", i, buffer[i]);
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_PLUS_VAL;
 		}
 		else if (buffer[i] == '-')
 		{
-			printf("--------\n");
+			//printf("--------\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_MIN_VAL;
 		}
 		else if (buffer[i] == '*')
 		{
-			printf("**********\n");
+			//printf("**********\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_TIMES_VAL;
 		}
 		else if (buffer[i] == '/')
 		{
-			printf("/////////////\n");
+			//printf("/////////////\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_DEL_VAL;
 		}
 		else if (buffer[i] == '^')
 		{
-			printf("^^^^^^^^^^^\n");
+			//printf("^^^^^^^^^^^\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_POW_VAL;
 		}
 		else if (buffer[i] == '+')
 		{
-			printf("in PLUUUUUUS\n");
+			//printf("in PLUUUUUUS\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_PLUS_VAL;
 		}
 		else if (isalpha(buffer[i]))
 		{
 
-			printf("VARIABLE\n");
+			//printf("VARIABLE\n");
 			obj[obj_counter].type_of_object = VARIABLE;
 			
 			char name[MAX_NAME_SIZE] = {};
@@ -119,22 +120,22 @@ struct Objects* fill_structures(FILE* text)
 				//strncmp(variables_names[obj[obj_counter].value], name, strlen(name));
 				for (int counter = 0; counter < strlen(name); counter++)
 					(variables_names[obj[obj_counter].value])[counter] = name[counter];
-				printf("name = [%s]\n", name);
-				printf("obj[obj_counter].value = %d\n", obj[obj_counter].value);
-				printf("%%% variables_names[%d] = [%s]    %%%\n", obj[obj_counter].value, variables_names[obj[obj_counter].value]);
+				//printf("name = [%s]\n", name);
+				//printf("obj[obj_counter].value = %d\n", obj[obj_counter].value);
+				//printf("%%% variables_names[%d] = [%s]    %%%\n", obj[obj_counter].value, variables_names[obj[obj_counter].value]);
 			}
 			obj_counter++;
 			//obj[obj_counter++].value = 666;
 		}
 		else if (isdigit(buffer[i]))
 		{
-			printf("DIGIT\n");
+			//printf("DIGIT\n");
 			obj[obj_counter].type_of_object = NUMBER;
 			obj[obj_counter++].value = atoi(&buffer[i]);
 
 			while (isdigit(buffer[i]))
 			{
-				printf("number = %d\n", buffer[i]);
+				//printf("number = %d\n", buffer[i]);
 				i++;
 			}
 			i--;
@@ -149,7 +150,7 @@ struct Objects* fill_structures(FILE* text)
 
 	obj_counter;
 
-	printf("obj_counter = %d\n", obj_counter);
+	//printf("obj_counter = %d\n", obj_counter);
 
 	delete[] buffer;
 	//delete[] obj;
@@ -249,4 +250,21 @@ int find_place(char* variables_names[NUMBER_OF_VARIABLES])
 			return i;
 	}
 	return -1;
+}
+
+void Objs_destructor(struct Objects* objs)
+{
+
+	delete[] objs->obj;
+	objs->obj = nullptr;
+
+	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
+	{
+		//printf("p = %p", objs->variables_names[i]);
+		delete[] objs->variables_names[i];
+		objs->variables_names[i] = nullptr;
+	}
+
+	delete[] objs;
+	objs = nullptr;
 }

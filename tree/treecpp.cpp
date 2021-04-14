@@ -1,7 +1,6 @@
 ﻿#include "tree.h"
 
 
-
 tree_element::tree_element(data_type data, tree_element* prev, tree_element* left, tree_element* right) :
     data_(data),
     prev_(prev),
@@ -20,11 +19,17 @@ tree_element::~tree_element()
     left_ = nullptr;
     right_ = nullptr;
 
-    if (user_data_)
+    if (data_)
     {
-        delete[] user_data_;
-        user_data_ = nullptr;
+        printf("STRANGEAFAGAGGG\n");
+        //delete[] data_;
+        //data_ = nullptr;
     }
+   // if (this)
+    //{
+     //   delete this;
+        //this = nullptr;
+    //}
 
 }
 
@@ -32,8 +37,8 @@ tree::tree(const char* name) :
     cur_size_(0),
     error_state_(0),
     name_(name),
-    root_(nullptr),
-    buffer_(nullptr)
+    root_(nullptr)
+    //buffer_(nullptr)
 {
     assert(this && "You passed nullptr to constructor");
     assert(name && "You need to pass name");
@@ -43,13 +48,13 @@ tree::~tree()
 {
     assert(this && "nullptr in desctructor");
 
-    assert(root_);
+    // assert(root_);
 
     if (root_)
-        root_->free_all();
+         root_->free_all();
     else
         printf("No free\n");
-
+        /*
     if (buffer_)
     {
         delete[] buffer_;
@@ -57,7 +62,7 @@ tree::~tree()
     }
     else
         printf("No buffer\n");
-
+        */
 
     cur_size_ = -1;
     error_state_ = -1;
@@ -73,17 +78,19 @@ void tree_element::free_all()
     if (get_right())
         right_->free_all();
 
-    if (user_length_)
-        delete[] user_data_;
-
+    if (data_)
+    {
+        //printf("delete\n");
+        //delete data_;
+        //data_ = nullptr;
+    }
     if (this)
-        free(this);
+        delete this;
     else
         printf("root is nullptr");
 
     return;
 }
-
 
 tree_element* tree::add_to_left(tree_element* x, data_type number)
 {
@@ -155,7 +162,6 @@ tree_element* tree::add_to_right(tree_element* x, data_type number)
     return tmp;
 }
 
-
 void tree::print_tree(bool need_graphviz_dump) const
 {
     if (need_graphviz_dump)
@@ -163,14 +169,16 @@ void tree::print_tree(bool need_graphviz_dump) const
         graphviz_dump("dump.dot");
 
         system("iconv.exe -t UTF-8 -f  CP1251 < dump.dot > dump_temp.dot");
+       
         system("dot dump_temp.dot -Tpdf -o dump.pdf");
+       
         system("del dump.dot");
+      
         system("ren dump_temp.dot dump.dot");
-        printf("before system\n");
+ 
         system("dump.pdf");
-        printf("after system\n");
-    }
 
+    }
 
     return;
 }
@@ -194,17 +202,7 @@ void tree::graphviz_dump(const char* dumpfile_name) const
     fclose(dump);
 
     //graphviz_dump("dump.dot");
-    printf("1");
-    system("iconv.exe -t UTF-8 -f  CP1251 < dump.dot > dump_temp.dot");
-    printf("2");
-    system("dot dump_temp.dot -Tpdf -o dump.pdf");
-    printf("3");
-    system("del dump.dot");
-    printf("4");
-    system("ren dump_temp.dot dump.dot");
-    printf("before system\n");
-    system("dump.pdf");
-    printf("after system\n");
+    //printf("1");
 
     return;
 }
@@ -255,155 +253,6 @@ char* make_buffer(const char* name_file)
     return buffer;
 }
 
-/*long size_of_file(FILE* user_code)
-{
-    assert(user_code);
-
-    fseek(user_code, 0, SEEK_END);
-    long file_length = ftell(user_code);
-    fseek(user_code, 0, SEEK_SET);
-
-    file_length++;
-
-    return file_length;
-}*/
-
-
-void tree::fill_tree(const char* name_file)
-{
-    assert(this && "you passed nullptr to fill_tree");
-    assert(name_file && "U need to pas FILE* database");
-    printf("name of file = [%s]\n", name_file);
-    buffer_ = make_buffer(name_file);
-    char* copy_of_buffer = buffer_;
-    if (strlen(buffer_) < 100)
-    {
-        printf("Buffer is empty\n");
-        return;
-    }
-
-    while (*buffer_ != '[');
-    buffer_++;
-
-    root_ = fill_root();
-
-    if (root_)
-        build_prev_connections(root_);
-    else printf("ROOT IS NULLPTR\n");
-
-    buffer_ = copy_of_buffer;
-
-    return;
-}
-
-void tree_element::build_prev_connections(tree_element* root)
-{
-    assert(root);
-
-    if (root->get_right())
-    {
-        if (((root->get_right())->get_left() == nullptr) && ((root->get_right())->get_right() == nullptr))
-            (root->get_right())->set_prev(root);
-        else
-        {
-            (root->get_right())->set_prev(root);
-            build_prev_connections(root->get_right());
-        }
-    }
-    if (root->get_left())
-    {
-        if (((root->get_left())->get_left() == nullptr) && ((root->get_left())->get_right() == nullptr))
-            (root->get_left())->set_prev(root);
-        else
-        {
-            (root->get_left())->set_prev(root);
-            build_prev_connections(root->get_left());
-        }
-    }
-}
-
-
-tree_element* tree::fill_root()
-{
-    while (isspace(*buffer_))
-        buffer_++;
-
-    if (*buffer_ == '[')
-        buffer_++;
-
-    while (isspace(*buffer_))
-        buffer_++;
-
-    tree_element* tmp_element = new tree_element;
-    assert(tmp_element && "Can't calloc mempry for tmp");
-
-    if ((*buffer_ == '`') || (*buffer_ == '?'))
-    {
-        buffer_++;
-
-        int lenght = 0;
-        while ((*buffer_ != '?') && (*buffer_ != '`'))
-        {
-            lenght++;
-            buffer_++;
-        }
-
-
-        buffer_ -= lenght;
-
-        tmp_element->data_ = buffer_;
-        tmp_element->length_ = lenght;
-
-        buffer_ += lenght;
-
-        tmp_element->set_left(nullptr);
-        tmp_element->set_right(nullptr);
-        tmp_element->set_prev(nullptr);
-
-        while (isspace(*buffer_))
-            buffer_++;
-
-        if (*buffer_ == '?')
-        {
-
-            buffer_++;
-
-            tmp_element->set_left(fill_root());
-            tmp_element->set_right(fill_root());
-        }
-    }
-    buffer_++;
-
-    while (isspace(*buffer_))
-        buffer_++;
-
-    if (*buffer_ == ']')
-    {
-        buffer_++;
-        return tmp_element;
-    }
-    else
-    {
-        printf("Something bad..\n");
-        return nullptr;
-    }
-}
-
-
-
-void tree::update_database(const char* name_file)
-{
-    assert(name_file && "no file name");
-
-    FILE* database = fopen(name_file, "wb");
-    assert(database && "Can't open file to update database");
-
-    tree_element* root = get_root();
-    root->print_elem(database);
-
-    return;
-}
-
 void tree_element::print_elem(FILE* database)
 {
     assert(database);
@@ -413,7 +262,7 @@ void tree_element::print_elem(FILE* database)
 
     if (get_left() != nullptr)
     {
-        fprintf(database, "?%.*s?\n", length_, data_);
+        //fprintf(database, "?%.*s?\n", length_, data_);
         get_left()->print_elem(database);
     }
 
@@ -421,7 +270,7 @@ void tree_element::print_elem(FILE* database)
         get_right()->print_elem(database);
 
     if ((get_right() == nullptr) && (get_left() == nullptr))
-        fprintf(database, "`%.*s`\n", length_, data_);
+        //fprintf(database, "`%.*s`\n", length_, data_);
 
     fprintf(database, "]\n");
 
@@ -447,12 +296,15 @@ void print_all_elements(tree_element* tmp, FILE* dump)
 
 
     if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
-        fprintf(dump, "\"%p\" [label = \"<f0> value = [%.*s]|{<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = lightgreen] \n", tmp, tmp->length_, tmp->non_const_get_data(), tmp->get_left(), tmp->get_prev(), tmp->get_right());
-    else
-        if (tmp->get_prev() == nullptr)
-            fprintf(dump, "\"%p\" [label = \"{<f0> value = [%.*s] |<here> [%p]}|{<f1> right| <here> prev| left}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, tmp->length_, tmp->non_const_get_data(), tmp, tmp->get_left(), tmp->get_prev(), tmp->get_right());
+        if(tmp->get_prev() != nullptr)
+            fprintf(dump, "\"%p\" [label = \"<f0> TYPE = [%s] | {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = lightgreen] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_left(), tmp->get_prev(), tmp->get_right());
         else
-            fprintf(dump, "\"%p\" [label = \"{<f0> value = [%.*s] |<here> [%p]}|{<f1> right| <here> prev| left}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = purple] \n", tmp, tmp->length_, tmp->non_const_get_data(), tmp, tmp->get_left(), tmp->get_prev(), tmp->get_right());
+            fprintf(dump, "\"%p\" [label = \"<f0> TYPE = [%s] | {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_left(), tmp->get_prev(), tmp->get_right());
+    else
+       if (tmp->get_prev() == nullptr)
+           fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | <here> [%p]} | {<f1> right| <here> prev| left}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp, tmp->get_left(), tmp->get_prev(), tmp->get_right());
+       else
+            fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | <here> [%p]} | {<f1> right| <here> prev| left}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = purple] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp, tmp->get_left(), tmp->get_prev(), tmp->get_right());
 
 
     return;
@@ -466,20 +318,239 @@ void print_all_elements_beauty(tree_element* tmp, FILE* dump)
     if (tmp->get_right())
     {
         print_all_elements_beauty(tmp->get_right(), dump);
-        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Yes\", fontcolor=darkblue]\n", tmp, tmp->get_right());
+        //fprintf(dump, "\"%p\" -> \"%p\" [label=\"Yes\", fontcolor=darkblue]\n", tmp, tmp->get_right());
     }
     if (tmp->get_left())
     {
         print_all_elements_beauty(tmp->get_left(), dump);
-        fprintf(dump, "\"%p\" -> \"%p\" [label=\"No\", fontcolor=darkblue]\n", tmp, tmp->get_left());
+       // fprintf(dump, "\"%p\" -> \"%p\" [label=\"No\", fontcolor=darkblue]\n", tmp, tmp->get_left());
     }
 
-    if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
-        fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = lightgreen] \n", tmp, tmp->length_, tmp->non_const_get_data());
-    else
-        if (tmp->get_prev() == nullptr)
-            fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = red] \n", tmp, tmp->length_, tmp->non_const_get_data());
-        else
-            fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = purple] \n", tmp, tmp->length_, tmp->non_const_get_data());
+    //if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
+        //fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = lightgreen] \n", tmp, tmp->length_, tmp->non_const_get_data());
+    //else
+        //if (tmp->get_prev() == nullptr)
+            //fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = red] \n", tmp, tmp->length_, tmp->non_const_get_data());
+        //else
+            //fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = purple] \n", tmp, tmp->length_, tmp->non_const_get_data());
     return;
+}
+
+void tree::fill_tree(struct Objects* main_object)
+{
+    assert(this && "Nullptr in tree");
+    assert(main_object && "nullptr Objects struct");
+
+
+    tree_element* tmp_element = new tree_element;
+
+    //struct Object* tmp_object= new struct Object;
+
+    //tmp_object->type_of_object = main;
+    //tmp_object->type_of_object = main_object->obj[0].value;
+
+    //tmp_element->data_ = &(main_object->obj[0]); //->set_data((main_object->obj)[0]);
+  
+    //root_ = tmp_element;
+    objs_ = main_object;
+
+    root_ = get_expression();
+
+    print_tree();
+
+    //delete tmp_object;
+    delete tmp_element;
+
+    return;
+}
+
+const char* get_type_of_object(TYPE type)
+{
+    switch (type)
+    {
+    case OPERATOR:
+        return "Operator";
+        break;
+    case NUMBER:
+        return "Number";
+        break;
+    case BRACKET:
+        return "Bracket";
+        break;
+    case VARIABLE:
+        return "Variable";
+        break;
+    default:
+        return "UNINDENTIFIED TYPE";
+        break;
+    }
+}
+
+tree_element* tree::get_expression()
+{
+    printf("get_express\n");
+    tree_element* tmp_element_1 = nullptr; // new tree_element;
+    
+    if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_MIN_VAL) || (objs_->obj[cur_size_].value == OP_PLUS_VAL)))
+    {
+        tree_element* tmp_element = new tree_element;
+        tmp_element->set_data(&(objs_->obj[cur_size_]));
+
+        tree_element* tmp_element_2 = nullptr;
+
+        cur_size_++;
+
+        tmp_element_2 = get_operator();
+
+        tmp_element->set_left(tmp_element_1);
+        tmp_element->set_right(tmp_element_2);
+        
+        return tmp_element;
+    }
+    else
+    {
+        tmp_element_1 = get_operator();
+    }
+
+    do
+    {
+        if (objs_->obj[cur_size_].type_of_object == BRACKET)
+        {
+            if (objs_->obj[cur_size_].value == R_BRACKET_VAL)
+                break;
+            else
+            {
+                printf("BAD BRACKETS in get_express\n");
+            }
+        }
+
+        if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_MIN_VAL) || (objs_->obj[cur_size_].value == OP_PLUS_VAL)))
+        {
+            tree_element* tmp_element = new tree_element;
+            tmp_element->set_data(&(objs_->obj[cur_size_]));
+
+            tree_element* tmp_element_2 = nullptr;
+
+            cur_size_++;
+
+            tmp_element_2 = get_operator();
+
+            tmp_element->set_left(tmp_element_1);
+            tmp_element->set_right(tmp_element_2);
+
+
+            printf("leave from get_express (2)\n");
+            return tmp_element;
+        }
+
+
+        
+
+    } while ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_MIN_VAL) || (objs_->obj[cur_size_].value == OP_PLUS_VAL)));
+
+        
+
+    printf("leave from get_express (1) \n");
+    return tmp_element_1;
+}
+
+
+tree_element* tree::get_operator()
+{
+    printf("get_operator\n");
+    tree_element* tmp_element_1 = get_pow();
+
+    if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_TIMES_VAL) || (objs_->obj[cur_size_].value == OP_DEL_VAL)))
+    {
+        tree_element* tmp_element = new tree_element;
+        tree_element* tmp_element_2 = nullptr;
+
+        tmp_element->set_data(&(objs_->obj[cur_size_]));
+
+        cur_size_++;
+
+        tmp_element_2 = get_pow();
+
+        tmp_element->set_left(tmp_element_1);
+        tmp_element->set_right(tmp_element_2);
+
+        printf("leave from get_operator (2)\n");
+        return tmp_element;
+
+    }
+
+    printf("leave from get_operator (1)\n");
+    return tmp_element_1;
+}
+
+tree_element* tree::get_pow()
+{
+    printf("get_pow\n");
+    tree_element* tmp_element_1 = nullptr;
+
+    tmp_element_1 = get_bracket(); 
+
+    //->set_left(get_bracket());
+
+    if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && (objs_->obj[cur_size_].value == OP_POW_VAL)) // if   "^"
+    {
+        //tmp_element->set_left(get_bracket()); // get_expression()
+        tree_element* tmp_element_2 = nullptr;
+        tree_element* tmp_element = new tree_element;
+
+        tmp_element->set_data(&(objs_->obj[cur_size_]));
+
+        cur_size_++;
+        
+
+        tmp_element_2 = get_bracket(); //->set_right(get_bracket());
+    
+        tmp_element->set_left(tmp_element_1);
+        tmp_element->set_right(tmp_element_2);
+        
+        printf("leave from get_pow (2)");
+        return tmp_element;
+    }
+
+    printf("leave from get_pow (1)");
+    return tmp_element_1;
+
+}
+
+tree_element* tree::get_bracket()
+{
+    printf("get_bracket\n");
+    tree_element* tmp_element = nullptr;
+
+    if (objs_->obj[cur_size_].type_of_object == BRACKET)
+    {
+        cur_size_++;
+
+        tmp_element = get_expression();
+
+        if (objs_->obj[cur_size_].type_of_object != BRACKET)
+            printf("ERROR IN BRACKETS!! WARNING!!!!\n");
+        else
+            cur_size_++;
+    }
+    else
+        tmp_element = get_number();
+
+    printf("leave from get_braket");
+    return tmp_element;
+}
+
+tree_element* tree::get_number()
+{
+    printf("get_number\n");
+    tree_element* tmp_element = new tree_element;
+    
+    //tmp_element = objs_->obj[cur_size];
+
+    tmp_element->set_data(&(objs_->obj[cur_size_]));
+
+    cur_size_++;
+
+    printf("leave from get_number\n");
+    return tmp_element; //tmp_element;
 }

@@ -1,4 +1,5 @@
 #include "dif.h"
+#include "tree.h"
 
 int main(int argc, int argv[])
 {
@@ -14,18 +15,11 @@ int main(int argc, int argv[])
 
 	print_objects(objs);
 
-	
-	
-	delete[] objs->obj;
-	
+	tree dif_tree("differenciator");
 
-	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
-	{
-		//printf("p = %p", objs->variables_names[i]);
-		delete[] objs->variables_names[i];
-	}
-
-	delete[] objs;
+	dif_tree.fill_tree(objs);
+	
+	Objs_destructor(objs);
 
 	return 0;
 }
