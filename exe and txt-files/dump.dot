@@ -1,7 +1,9 @@
-digraph main_differenciator {
+digraph differenciator {
 node [color = Red, fontname = Courier, style = filled, shape=record, fillcolor = purple]
 edge [color = Blue, style=dashed]
-"0149FBB0" [label = "{<f0> TYPE = [Variable] | VALUE = [x]}| {<f1> left| right}| {<f2> [00000000]| [00000000]}",style = filled, fillcolor = red] 
-"0149FB70" -> "0149FBB0" [label="Right", fontcolor=darkblue]
-"0149FB70" [label = "{<f0> TYPE = [Operator] | VALUE = [-]}| {<f1> left| right}| {<f2> [0149FBB0]| [00000000]}",style = filled, fillcolor = red] 
+"00AB5A28" [label = "{<f0> TYPE = [Number] | VALUE = [0]}| {<f1> left| <here> prev| right}| {<f2> [00000000]| [00AB5CE8]| [00000000]}",style = filled, fillcolor = lightgreen] 
+"00AB5CE8" -> "00AB5A28" [label="Left", fontcolor=darkblue]
+"00AB5D68" [label = "{<f0> TYPE = [Number] | VALUE = [1]}| {<f1> left| <here> prev| right}| {<f2> [00000000]| [00AB5CE8]| [00000000]}",style = filled, fillcolor = lightgreen] 
+"00AB5CE8" -> "00AB5D68" [label="Right", fontcolor=darkblue]
+"00AB5CE8" [label = "{<f0> TYPE = [Operator] | VALUE = [+]}| {<f1> left| right}| {<f2> [00AB5D68]| [00AB5A28]}",style = filled, fillcolor = red] 
 }
