@@ -15,10 +15,14 @@ int main(int argc, int argv[])
 
 	print_objects(objs);
 
-	tree dif_tree("differenciator");
+	tree dif_tree("main_differenciator");
 
 	dif_tree.fill_tree(objs);
-	
+
+	tree* new_tree = dif_tree.differenciate(dif_tree.get_root());
+
+	new_tree->print_tree();
+
 	Objs_destructor(objs);
 
 	return 0;

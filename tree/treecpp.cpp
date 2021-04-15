@@ -1,5 +1,67 @@
 ﻿#include "tree.h"
 
+tree* tree::differenciate(tree_element* start_root)
+{
+    tree* dif_tree = new tree;// ("update tree");
+    dif_tree->objs_ = objs_;
+
+    switch (start_root->get_data()->type_of_object)
+    {
+    case OPERATOR:
+    {
+        switch (start_root->get_data()->value)
+        {
+        case OP_MIN_VAL:
+        case OP_PLUS_VAL:
+        {
+            //tree_element* root = dif_tree.add_to_left(nullptr, root_->get_data());
+            tree_element* root = new tree_element;
+
+            root->set_data(start_root->get_data());
+            dif_tree->set_root(root);
+            dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
+
+            
+            root->set_left(differenciate(start_root->get_left())->get_root());        //(dif_tree->differenciate(start_root->get_left())->get_root());
+            root->get_left()->set_prev(root);
+
+            root->set_right(differenciate(start_root->get_right())->get_root());  //(dif_tree->differenciate(start_root->get_right())->get_root());
+            root->get_right()->set_prev(root);
+
+            return dif_tree;
+            break;
+        }
+        default:
+            printf("Undefined OP = [%s]\n", get_type_of_object(start_root->get_data()->value));
+            break;
+        }
+        break;
+    }
+    case NUMBER:
+    {    
+        tree_element* root = dif_tree->add_to_right(nullptr, start_root->get_data());
+
+        dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
+        
+        root->get_data()->value = 0;
+
+        return dif_tree;
+    }
+    case VARIABLE:
+    {
+        tree_element* root = dif_tree->add_to_right(nullptr, start_root->get_data());
+
+        root->get_data()->value = 1;
+        root->get_data()->type_of_object = NUMBER;
+    }
+    default:
+        printf("Undefinied type of object\n");
+        break;
+    }
+    
+    printf("Something bad in diff\n");
+    return dif_tree;
+}
 
 tree_element::tree_element(data_type data, tree_element* prev, tree_element* left, tree_element* right) :
     data_(data),
@@ -7,7 +69,7 @@ tree_element::tree_element(data_type data, tree_element* prev, tree_element* lef
     left_(left),
     right_(right)
 {
-    assert(this && "You passed nullptr to list_elem construct");
+    //assert(this && "You passed nullptr to list_elem construct");
 }
 
 tree_element::~tree_element()

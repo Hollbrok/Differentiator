@@ -3,47 +3,6 @@
 
 #include "Includes.h"
 
-/* Debug memory allocation support */
-#ifndef NDEBUG 
-#define _CRTDBG_MAP_ALLOC
-#include <crtdbg.h> 
-
-#define SetDbgMemHooks()                                           \
-  _CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CRTDBG_CHECK_ALWAYS_DF | \
-  _CRTDBG_ALLOC_MEM_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG))      
-
-static class __Dummy
-{
-public:
-	/* Class constructor */
-	__Dummy(VOID)
-	{
-		SetDbgMemHooks();
-	} /* End of '__Dummy' constructor */
-} __ooppss;
-#endif /* _DEBUG */ 
-
-#ifndef NDEBUG
-#  ifdef _CRTDBG_MAP_ALLOC 
-#    define new new(_NORMAL_BLOCK, __FILE__, __LINE__) 
-#  endif /* _CRTDBG_MAP_ALLOC */ 
-#endif /* _DEBUG */
-
-
-#define NDEBUG
-#ifndef NDEBUG
-#define VERIFICATION                                                           \
-{                                                                              \
-  if (verification()) {                                                        \
-    fprintf(stderr, "LINE: %d\nFILE:%s\nFUNC:%s"__LINE__, __FILE__, __func__); \
-    assert(0);                                                                 \
-  }                                                                            \
-}                                                                               
-#else
-#define VERIFICATION ;
-#endif /* _DEBUG */
-
-
 #define POISON nullptr
 
 using data_type = struct Object*;
@@ -106,7 +65,7 @@ public:
 	void free_all();
 
 	bool get_user_answer();
-
+	
 	//void fill_root();
 };
 
@@ -120,17 +79,20 @@ private:
 
 	tree_element* root_ = nullptr;
 
-	struct Objects* objs_ = nullptr;
+	//struct Objects* objs_ = nullptr;
 
 	//char* buffer_ = nullptr;
 
 
 public:
+	struct Objects* objs_ = nullptr;
+
 	
-	tree(const char* name);
+	tree(const char* name = "differenciator");
 	~tree();
 
-
+	void set_cur_size(int number) { cur_size_ = number; };
+	int get_cur_size() { return cur_size_; };
 
 	tree_element* add_to_right(tree_element* x, data_type number);
 	tree_element* add_to_left(tree_element* x, data_type number);
@@ -140,7 +102,7 @@ public:
 
 
 	tree_element* get_root() { return root_; };
-
+	void		  set_root(tree_element* new_root) { root_ = new_root; };
 
 	void print_tree(bool need_graphviz_dump = true)
 		const;
@@ -166,7 +128,7 @@ public:
 
 	tree_element* get_number();
 
-	
+	tree* differenciate(tree_element* new_root);
 
 };
 
