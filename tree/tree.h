@@ -82,11 +82,6 @@ private:
 
 	tree_element* root_ = nullptr;
 
-	//struct Objects* objs_ = nullptr;
-
-	//char* buffer_ = nullptr;
-
-
 public:
 	struct Objects* objs_ = nullptr;
 
@@ -128,6 +123,8 @@ public:
 	tree_element* get_pow();
 
 	tree_element* get_bracket();
+
+	tree_element* get_func();
 
 	tree_element* get_number();
 

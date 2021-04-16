@@ -50,6 +50,7 @@ enum TYPES
 	NUMBER		= 2,
 	BRACKET		= 3,
 	VARIABLE	= 4,
+	FUNCTION	= 5,
 };
 
 enum BRACKET_VALUES
@@ -65,6 +66,13 @@ enum OPERATORS_VALUES
 	OP_TIMES_VAL	= 5,
 	OP_DEL_VAL		= 6,
 	OP_POW_VAL		= 7,
+};
+
+enum FACTIONS_VALUES
+{
+	SIN_VAL			= 10,
+	COS_VAL			= 11,
+	LN_VAL			= 12,
 };
 
 /* Debug memory allocation support */

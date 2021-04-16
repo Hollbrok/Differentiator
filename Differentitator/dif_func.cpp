@@ -97,6 +97,14 @@ struct Objects* fill_structures(FILE* text)
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_PLUS_VAL;
 		}
+		else if (!strncmp(&buffer[i], "ln", 2))
+		{
+			printf("GOOD LN\n");
+			obj[obj_counter].type_of_object = FUNCTION;
+			obj[obj_counter++].value = LN_VAL;
+
+			i += 2 - 1;
+		}
 		else if (isalpha(buffer[i]))
 		{
 
@@ -188,6 +196,9 @@ void print_objects(Objects* object)
 		case VARIABLE:
 			printf("%d. type is VARIABLE, value is %d\n", i, object->obj[i].value);
 			break;
+		case FUNCTION:
+			printf("%d. type is FUNCTION, value is %d\n", i, object->obj[i].value);
+			break;
 		default:
 			printf("UNINDENTIFIED TYPE\n");
 			break;
@@ -257,7 +268,7 @@ void Objs_destructor(struct Objects* objs)
 
 	delete[] objs->obj;
 	objs->obj = nullptr;
-
+	//printf("2");
 	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
 	{
 		//printf("p = %p", objs->variables_names[i]);

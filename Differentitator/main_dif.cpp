@@ -27,8 +27,8 @@ int main(int argc, int argv[])
 	new_tree->objs_ = dif_tree.objs_;
 
 	new_tree->print_tree();
-
-	//Objs_destructor(objs);
-
+	//printf("1\n");
+//	Objs_destructor(objs);
+	printf("Successfull complete\n");
 	return 0;
 }
