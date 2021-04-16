@@ -32,9 +32,8 @@ struct Objects {
 
 	char* variables_names[NUMBER_OF_VARIABLES] = {};
 
-	int number_of_objects = 0;
+	size_t number_of_objects = 0;
 
-	//void add_obj(Object* new_obj) { cur_free_obj = new_obj; cur_free_obj; }
 };
 
 struct Object
@@ -47,10 +46,10 @@ struct Object
 
 enum TYPES
 {
-	OPERATOR = 1,
-	NUMBER = 2,
-	BRACKET = 3,
-	VARIABLE = 4,
+	OPERATOR	= 1,
+	NUMBER		= 2,
+	BRACKET		= 3,
+	VARIABLE	= 4,
 };
 
 enum BRACKET_VALUES
@@ -61,11 +60,11 @@ enum BRACKET_VALUES
 
 enum OPERATORS_VALUES
 {
-	OP_PLUS_VAL = 3,
-	OP_MIN_VAL = 4,
-	OP_TIMES_VAL = 5,
-	OP_DEL_VAL = 6,
-	OP_POW_VAL = 7,
+	OP_PLUS_VAL		= 3,
+	OP_MIN_VAL		= 4,
+	OP_TIMES_VAL	= 5,
+	OP_DEL_VAL		= 6,
+	OP_POW_VAL		= 7,
 };
 
 /* Debug memory allocation support */

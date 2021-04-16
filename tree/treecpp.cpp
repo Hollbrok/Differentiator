@@ -1,193 +1,118 @@
 ﻿#include "tree.h"
 
+#define PRINT_UNDEFINIED_TYPE                                   \
+    printf("Undefined OP = [%s]\n", get_type_of_object(start_root->get_data()->value))
+
+
+#define ADD_OR_SUB(obj, left, right)                            \
+    create_root(obj, left, right)
+
+#define ADDITION(obj, left, right)                              \
+    create_root(obj, left, right)
+
+#define MULTIPLY(obj, left, right)                              \
+    create_root(obj, left, right)
+
+#define dR                                                      \
+    differenciate(start_root->get_right())
+
+#define dL                                                      \
+    differenciate(start_root->get_left())
+
+#define POWER()                                                 \
+    create_root()
+
+#define copyL                                                   \
+    copy_subtree(start_root->get_left())
+
+#define copyR                                                   \
+    copy_subtree(start_root->get_right())
+
+#define CR_ADD                                                  \
+    create_object(OPERATOR, OP_PLUS_VAL)
+    
+#define CR_NUMBER(value)                                        \
+    create_root(create_object(NUMBER, value))
+
+#define GET_VAL                                                 \
+    start_root->get_data_value()
+
+#define GET_TYPE                                                \
+    start_root->get_data_type()
+
 void Objs_destructor(struct Objects* objs);
+
+Object* create_object(int type, int value);
+
+tree_element* create_root(struct Object* obj, tree_element* left = nullptr, tree_element* right = nullptr, tree_element* prev = nullptr);
+
+Object* create_object(int type, int value)
+{
+    struct Object* obj = new Object;
+
+    obj->type_of_object = type;
+    obj->value = value;
+
+    return obj;
+}
+
+tree_element* create_root(struct Object* obj, tree_element* left, tree_element* right, tree_element* prev)
+{
+    tree_element* root = new tree_element;
+    
+    root->set_left(left);
+
+    if(left)
+        left->set_prev(root);
+
+    root->set_right(right);
+    
+    if(right)
+        right->set_prev(root);
+
+    root->set_data(obj);
+
+    root->set_prev(prev);
+
+    return root;
+}
 
 tree_element* tree::differenciate(tree_element* start_root)
 {
-    //tree* dif_tree = new tree;// ("update tree");
-    //dif_tree->objs_ = objs_;
-
-    switch (start_root->get_data()->type_of_object)
+    switch (GET_TYPE)
     {
-    case OPERATOR:
-    {
-        switch (start_root->get_data()->value)
+        case OPERATOR:
         {
-        case OP_MIN_VAL:
-        case OP_PLUS_VAL:
-        {
-            //tree_element* root = dif_tree.add_to_left(nullptr, root_->get_data());
-            tree_element* root = new tree_element;
-
-            //root->set_data(start_root->get_data());
-            struct Object* obj = new Object;
-
-            obj->type_of_object = OPERATOR;
-            obj->value = start_root->get_data()->value;
-            root->set_data(obj);
-            //dif_tree->set_root(root);
-            //dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
-
-            
-            root->set_left(differenciate(start_root->get_left()));        //(dif_tree->differenciate(start_root->get_left())->get_root());
-            root->get_left()->set_prev(root);
-
-            root->set_right(differenciate(start_root->get_right()));  //(dif_tree->differenciate(start_root->get_right())->get_root());
-            root->get_right()->set_prev(root);
-
-            return root;//return dif_tree;
+            switch (GET_VAL)
+            {
+                case OP_MIN_VAL:
+                case OP_PLUS_VAL:
+                    return ADD_OR_SUB(create_object(OPERATOR, GET_VAL), dL, dR);
+                
+                case OP_TIMES_VAL:
+                    return ADDITION(CR_ADD, 
+                                    MULTIPLY(create_object(OPERATOR, OP_TIMES_VAL), dL, copyR), 
+                                    MULTIPLY(create_object(OPERATOR, OP_TIMES_VAL), dR, copyL) 
+                                   );
+                case OP_POW_VAL:
+                    //return POWER();
+                default:
+                    PRINT_UNDEFINIED_TYPE;
+            }
             break;
         }
-        case OP_TIMES_VAL:
-        {
-            tree_element* root = new tree_element;
+        case NUMBER:
+            return CR_NUMBER(0);
 
-            tree_element* copy_of_left = copy_subtree(start_root->get_left());
-            tree_element* copy_of_right = copy_subtree(start_root->get_right());
-
-            tree_element* left_subtree = copy_subtree(start_root->get_left());
-            tree_element* right_subtree = copy_subtree(start_root->get_right());
-
-            struct Object* obj = new Object[3];
-
-//            struct Object* plus_op = new Object;
-
-            obj[0].type_of_object = OPERATOR;
-            obj[0].value = OP_PLUS_VAL;
-
-            //struct Objects* objs = new Objects;
-
-       
-            //= plus_op;
-       
-            //objs->variables_names = nullptr;
-
-            root->set_data(&obj[0]); // OP +
-
-
-
-            //dif_tree->set_root(root);
-
-            tree_element* left_mul = new tree_element;
-            tree_element* right_mul = new tree_element;
-
-     //       struct Object* left_mul_op = new Object;
-
-            obj[1].type_of_object = OPERATOR;
-            obj[1].value = OP_TIMES_VAL;
-
-           // struct Object* right_mul_op = new Object;
-
-            obj[2].type_of_object = OPERATOR;
-            obj[2].value = OP_TIMES_VAL;
-
-            left_mul->set_data(&obj[1]);
-            left_mul->set_prev(root);
-
-            right_mul->set_data(&obj[2]);
-            right_mul->set_prev(root);
-            //objs->obj = obj;
-            //objs->number_of_objects = 3;
-
-            //tree_element* left_mul = new tree_element;
-            //left_mul->set_data(&obj[1]);
-            root->add_to_left(left_mul);
-
-            //tree_element* right_mul = new tree_element;
-            //right_mul->set_data(&obj[2]);
-            root->add_to_right(right_mul);
-
-            //  /\ GOOD
-            //  ||
-            tree_element* left_dif = differenciate(start_root->get_left());
-            left_mul->set_left(left_dif);        //(dif_tree->differenciate(start_root->get_left())->get_root());
-            left_dif->set_prev(left_mul);
-
-           
-            //
-            //!!!
-            left_mul->set_right(right_subtree);
-            printf("1.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
-            //!!!
-            right_subtree->set_prev(left_mul);
-            printf("2.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
-            
-
-            // Тут всю хорошо, со след строчки гг <- no
-            tree_element* right_dif = differenciate(start_root->get_right());
-            right_mul->set_left(right_dif);        //(dif_tree->differenciate(start_root->get_left())->get_root());
-            printf("3.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
-
-
-            right_dif->set_prev(right_mul);
-            printf("4.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
-            
-            //tree_element* left_subtree = copy_subtree(start_root->get_left());
-            
-            right_mul->set_right(left_subtree);
-            left_subtree->set_prev(right_mul);
-            printf("5.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
-            root->set_left(left_mul);
-            root->set_right(right_mul);
-
-           // dif_tree->objs_ = objs;
-
-            return root; //return dif_tree;
-            break;
-        }
+        case VARIABLE:
+            return CR_NUMBER(1);
+        
         default:
-            printf("Undefined OP = [%s]\n", get_type_of_object(start_root->get_data()->value));
-            break;
-        }
-        break;
-    }
-    case NUMBER: // MAY BE I NEED TO CREATE FULL NEW ELEMENT
-    {    
-        tree_element* root = new tree_element;
-        
-        struct Object* obj = new Object;
-        obj->type_of_object = NUMBER;//start_root->get_data()->type_of_object;
-        obj->value = 0;
-        //root->add_to_right(start_root->get_data());
-
-        //dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
-        root->set_data(obj);
-        //root->get_data()->value = 0;
-
-        return root;//return dif_tree;
-    }
-    case VARIABLE:
-    {
-        tree_element* root = new tree_element; //dif_tree->add_to_right(nullptr, start_root->get_data());
-        
-        struct Object* obj = new Object;
-        struct Objects* objs = new Objects;
-
-        obj->type_of_object = NUMBER;
-        obj->value = 1;
-
-        root->set_data(obj);
-
-        objs->obj = obj;
-        objs->number_of_objects = 1;
-
-        //dif_tree->objs_ = objs;
-       // root->get_data()->value = 1;
-       // root->get_data()->type_of_object = NUMBER;
-
-        //dif_tree->set_root(root);
-        
-        return root;//return dif_tree;
-        
-        break;
-    }
-    default:
-        printf("Undefinied type of object\n");
-        break;
+            PRINT_UNDEFINIED_TYPE;
     }
     
     printf("Something bad in diff\n");
-    return nullptr;//return dif_tree;
+    return nullptr;
 }
 
 tree_element* tree_element::copy_subtree(tree_element* start_element)

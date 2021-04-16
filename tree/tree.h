@@ -8,7 +8,6 @@
 using data_type = struct Object*;
 const int MAX_QUESTION_SIZE = 30;
 
-
 class tree_element
 {
 private:
@@ -23,24 +22,18 @@ public:
 
 	data_type data_ = POISON;
 
-
 	tree_element(data_type data = 0, tree_element* prev = nullptr,
 		tree_element* left = nullptr, tree_element* right = nullptr);
 
 	~tree_element();
 
-	//! SETTERS
 
 	void set_data(data_type new_data) { data_ = new_data; };
-	//void set_user_data(data_type new_data) { user_data_ = new_data; };
 
 	void set_left(tree_element* new_left) { left_ = new_left; };
 	void set_right(tree_element* new_right) { right_ = new_right; };
 
 	void set_prev(tree_element* new_prev) { prev_ = new_prev; };
-
-
-	//! GETTERS
 
 	const data_type& get_data()     const { assert(this && "You passed nullptr to get_data()"); return data_; };
 
@@ -48,11 +41,12 @@ public:
 	const tree_element* get_right() const { assert(this && "nullptr tree_element in get_next()"); return right_; };
 	const tree_element* get_prev()  const { assert(this && "nullptr tree_element in get_prev()"); return prev_; };
 
-	//! NON_CONST GETTERS
-
 	data_type non_const_get_data() { assert(this && "You passed nullptr to get_data()"); return data_; };
 
 	data_type& get_data() { assert(this && "You passed nullptr to get_data()"); return data_; };
+
+	VALUE get_data_value() { return data_->value; };
+	TYPE get_data_type() { return data_->type_of_object; };
 
 	tree_element* get_left() { assert(this && "nullptr tree_element in get_next()"); return left_; };
 	tree_element* get_right() { assert(this && "nullptr tree_element in get_next()"); return right_; };
@@ -76,7 +70,6 @@ public:
 
 	tree_element* add_to_right(tree_element* new_element);
 
-	//void fill_root();
 };
 
 class tree:tree_element
@@ -145,10 +138,8 @@ public:
 
 void print_all_elements_beauty(tree_element* tmp, FILE* dump);
 
-
 long size_of_file(FILE* user_code);
 char* make_buffer(const char* name_file);
-
 
 void free_all(tree_element* root);
 
@@ -156,4 +147,5 @@ void print_all_elements(tree_element* tmp, FILE* dump, struct Objects* objs);
 
 const char* get_type_of_object(TYPE type);
 const char* get_value_of_object(struct Objects* objs, struct Object* obj);
+
 #endif // TREE_H_INCLUDED
