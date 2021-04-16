@@ -33,6 +33,8 @@ struct Objects {
 	char* variables_names[NUMBER_OF_VARIABLES] = {};
 
 	int number_of_objects = 0;
+
+	//void add_obj(Object* new_obj) { cur_free_obj = new_obj; cur_free_obj; }
 };
 
 struct Object

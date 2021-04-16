@@ -65,7 +65,17 @@ public:
 	void free_all();
 
 	bool get_user_answer();
-	
+
+	tree_element* copy_subtree(tree_element* start_element);
+
+	tree_element* copy_left_subtree(tree_element* start_element);
+
+	tree_element* copy_right_subtree(tree_element* start_element);
+
+	tree_element* add_to_left(tree_element* new_element);
+
+	tree_element* add_to_right(tree_element* new_element);
+
 	//void fill_root();
 };
 
@@ -128,7 +138,7 @@ public:
 
 	tree_element* get_number();
 
-	tree* differenciate(tree_element* new_root);
+	tree_element* differenciate(tree_element* new_root);
 
 };
 

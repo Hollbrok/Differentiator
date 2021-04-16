@@ -1,9 +1,11 @@
 ﻿#include "tree.h"
 
-tree* tree::differenciate(tree_element* start_root)
+void Objs_destructor(struct Objects* objs);
+
+tree_element* tree::differenciate(tree_element* start_root)
 {
-    tree* dif_tree = new tree;// ("update tree");
-    dif_tree->objs_ = objs_;
+    //tree* dif_tree = new tree;// ("update tree");
+    //dif_tree->objs_ = objs_;
 
     switch (start_root->get_data()->type_of_object)
     {
@@ -17,18 +19,120 @@ tree* tree::differenciate(tree_element* start_root)
             //tree_element* root = dif_tree.add_to_left(nullptr, root_->get_data());
             tree_element* root = new tree_element;
 
-            root->set_data(start_root->get_data());
-            dif_tree->set_root(root);
-            dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
+            //root->set_data(start_root->get_data());
+            struct Object* obj = new Object;
+
+            obj->type_of_object = OPERATOR;
+            obj->value = start_root->get_data()->value;
+            root->set_data(obj);
+            //dif_tree->set_root(root);
+            //dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
 
             
-            root->set_left(differenciate(start_root->get_left())->get_root());        //(dif_tree->differenciate(start_root->get_left())->get_root());
+            root->set_left(differenciate(start_root->get_left()));        //(dif_tree->differenciate(start_root->get_left())->get_root());
             root->get_left()->set_prev(root);
 
-            root->set_right(differenciate(start_root->get_right())->get_root());  //(dif_tree->differenciate(start_root->get_right())->get_root());
+            root->set_right(differenciate(start_root->get_right()));  //(dif_tree->differenciate(start_root->get_right())->get_root());
             root->get_right()->set_prev(root);
 
-            return dif_tree;
+            return root;//return dif_tree;
+            break;
+        }
+        case OP_TIMES_VAL:
+        {
+            tree_element* root = new tree_element;
+
+            tree_element* copy_of_left = copy_subtree(start_root->get_left());
+            tree_element* copy_of_right = copy_subtree(start_root->get_right());
+
+            tree_element* left_subtree = copy_subtree(start_root->get_left());
+            tree_element* right_subtree = copy_subtree(start_root->get_right());
+
+            struct Object* obj = new Object[3];
+
+//            struct Object* plus_op = new Object;
+
+            obj[0].type_of_object = OPERATOR;
+            obj[0].value = OP_PLUS_VAL;
+
+            //struct Objects* objs = new Objects;
+
+       
+            //= plus_op;
+       
+            //objs->variables_names = nullptr;
+
+            root->set_data(&obj[0]); // OP +
+
+
+
+            //dif_tree->set_root(root);
+
+            tree_element* left_mul = new tree_element;
+            tree_element* right_mul = new tree_element;
+
+     //       struct Object* left_mul_op = new Object;
+
+            obj[1].type_of_object = OPERATOR;
+            obj[1].value = OP_TIMES_VAL;
+
+           // struct Object* right_mul_op = new Object;
+
+            obj[2].type_of_object = OPERATOR;
+            obj[2].value = OP_TIMES_VAL;
+
+            left_mul->set_data(&obj[1]);
+            left_mul->set_prev(root);
+
+            right_mul->set_data(&obj[2]);
+            right_mul->set_prev(root);
+            //objs->obj = obj;
+            //objs->number_of_objects = 3;
+
+            //tree_element* left_mul = new tree_element;
+            //left_mul->set_data(&obj[1]);
+            root->add_to_left(left_mul);
+
+            //tree_element* right_mul = new tree_element;
+            //right_mul->set_data(&obj[2]);
+            root->add_to_right(right_mul);
+
+            //  /\ GOOD
+            //  ||
+            tree_element* left_dif = differenciate(start_root->get_left());
+            left_mul->set_left(left_dif);        //(dif_tree->differenciate(start_root->get_left())->get_root());
+            left_dif->set_prev(left_mul);
+
+           
+            //
+            //!!!
+            left_mul->set_right(right_subtree);
+            printf("1.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
+            //!!!
+            right_subtree->set_prev(left_mul);
+            printf("2.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
+            
+
+            // Тут всю хорошо, со след строчки гг <- no
+            tree_element* right_dif = differenciate(start_root->get_right());
+            right_mul->set_left(right_dif);        //(dif_tree->differenciate(start_root->get_left())->get_root());
+            printf("3.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
+
+
+            right_dif->set_prev(right_mul);
+            printf("4.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
+            
+            //tree_element* left_subtree = copy_subtree(start_root->get_left());
+            
+            right_mul->set_right(left_subtree);
+            left_subtree->set_prev(right_mul);
+            printf("5.%p , right_data = %d\n", left_mul->get_right(), left_mul->get_right()->get_data()->value);
+            root->set_left(left_mul);
+            root->set_right(right_mul);
+
+           // dif_tree->objs_ = objs;
+
+            return root; //return dif_tree;
             break;
         }
         default:
@@ -37,22 +141,45 @@ tree* tree::differenciate(tree_element* start_root)
         }
         break;
     }
-    case NUMBER:
+    case NUMBER: // MAY BE I NEED TO CREATE FULL NEW ELEMENT
     {    
-        tree_element* root = dif_tree->add_to_right(nullptr, start_root->get_data());
-
-        dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
+        tree_element* root = new tree_element;
         
-        root->get_data()->value = 0;
+        struct Object* obj = new Object;
+        obj->type_of_object = NUMBER;//start_root->get_data()->type_of_object;
+        obj->value = 0;
+        //root->add_to_right(start_root->get_data());
 
-        return dif_tree;
+        //dif_tree->set_cur_size(dif_tree->get_cur_size() + 1);
+        root->set_data(obj);
+        //root->get_data()->value = 0;
+
+        return root;//return dif_tree;
     }
     case VARIABLE:
     {
-        tree_element* root = dif_tree->add_to_right(nullptr, start_root->get_data());
+        tree_element* root = new tree_element; //dif_tree->add_to_right(nullptr, start_root->get_data());
+        
+        struct Object* obj = new Object;
+        struct Objects* objs = new Objects;
 
-        root->get_data()->value = 1;
-        root->get_data()->type_of_object = NUMBER;
+        obj->type_of_object = NUMBER;
+        obj->value = 1;
+
+        root->set_data(obj);
+
+        objs->obj = obj;
+        objs->number_of_objects = 1;
+
+        //dif_tree->objs_ = objs;
+       // root->get_data()->value = 1;
+       // root->get_data()->type_of_object = NUMBER;
+
+        //dif_tree->set_root(root);
+        
+        return root;//return dif_tree;
+        
+        break;
     }
     default:
         printf("Undefinied type of object\n");
@@ -60,7 +187,80 @@ tree* tree::differenciate(tree_element* start_root)
     }
     
     printf("Something bad in diff\n");
-    return dif_tree;
+    return nullptr;//return dif_tree;
+}
+
+tree_element* tree_element::copy_subtree(tree_element* start_element)
+{
+    tree_element* new_start = new tree_element;
+    //new_start->set_data(start_element->get_data());
+
+    printf("3 if\n");
+    //delete new_start;
+    struct Object* obj = new Object;
+    obj->type_of_object = start_element->get_data()->type_of_object;
+    obj->value = start_element->get_data()->value;
+
+    new_start->set_data(obj);
+
+    if ((start_element->get_left() == nullptr) && (start_element->get_right() == nullptr))
+    {
+        return new_start;
+        //new_start->set_prev(start_element->get_prev());
+        //return new_start;
+    }
+    if (start_element->get_left() != nullptr)
+    {
+        printf("1 if\n");
+        tree_element* left_subtree = copy_subtree(start_element->get_left());
+        new_start->set_left(left_subtree);
+        //new_start->add_to_left(left_subtree);//new_start->set_right(copy_right_subtree(start_element->get_right()));
+        left_subtree->set_prev(new_start);
+    }
+    if (start_element->get_right() != nullptr)
+    {
+        printf("2 if\n");
+        tree_element* right_subtree = copy_subtree(start_element->get_right());
+        //new_start->add_to_right(right_subtree);//new_start->set_right(copy_right_subtree(start_element->get_right()));
+        new_start->set_right(right_subtree);
+        right_subtree->set_prev(new_start);
+    }
+
+    return new_start;
+}
+
+tree_element* tree_element::add_to_left(tree_element* new_element)
+{
+    assert(this && "You passed nullptr tree");
+
+    tree_element* tmp = new tree_element;
+    assert(tmp && "Can't calloc memory for tree_element");
+
+    tmp->set_prev(this);
+    tmp->set_right(nullptr);
+    tmp->set_left(nullptr);
+    //tmp->set_data(number);
+
+    this->set_left(tmp);
+
+    return tmp;
+}
+
+tree_element* tree_element::add_to_right(tree_element* new_element)
+{
+    assert(this && "You passed nullptr tree");
+
+    tree_element* tmp = new tree_element;
+    assert(tmp && "Can't calloc memory for tree_element");
+
+    tmp->set_prev(this);
+    tmp->set_right(nullptr);
+    tmp->set_left(nullptr);
+    //tmp->set_data(number);
+
+    this->set_right(tmp);
+
+    return tmp;
 }
 
 tree_element::tree_element(data_type data, tree_element* prev, tree_element* left, tree_element* right) :
@@ -87,7 +287,7 @@ tree_element::~tree_element()
         //delete[] data_;
         //data_ = nullptr;
     }
-    if (this)
+    if (false)
     {
         //delete this;
         //this = nullptr;
@@ -109,13 +309,22 @@ tree::tree(const char* name) :
 tree::~tree()
 {
     assert(this && "nullptr in desctructor");
-
+    printf("%s\n", __FUNCSIG__);
     // assert(root_);
 
     if (root_)
          root_->free_all();
     else
         printf("No free\n");
+
+    if (false)
+    {
+        delete this;
+    }
+    if (objs_)
+    {
+        Objs_destructor(objs_);
+    }
         /*
     if (buffer_)
     {
@@ -413,43 +622,56 @@ void print_all_elements(tree_element* tmp, FILE* dump, struct Objects* objs)
 {
     assert(tmp && "tmp is nullptr in print_all_elements");
 
-    if (tmp->get_right())
-    {
-        print_all_elements(tmp->get_right(), dump, objs);
-        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Left\", fontcolor=darkblue]\n", tmp, tmp->get_right());
-        //fprintf(dump, "\"%p\" -> \"%p\" [label=\"Left\", fontcolor=darkblue]\n", tmp->get_right(), (tmp->get_right())->get_prev());
-    }
+    
     if (tmp->get_left())
     {
         print_all_elements(tmp->get_left(), dump, objs);
-        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Right\", fontcolor=darkblue]\n", tmp, tmp->get_left());
+        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Left\", fontcolor=darkblue]\n", tmp, tmp->get_left());
         //fprintf(dump, "\"%p\" -> \"%p\" [label=\"Right\", fontcolor=darkblue]\n", tmp->get_left(), (tmp->get_left())->get_prev());
     }
-    
+    if (tmp->get_right())
+    {
+        print_all_elements(tmp->get_right(), dump, objs);
+        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Right\", fontcolor=darkblue]\n", tmp, tmp->get_right());
+        //fprintf(dump, "\"%p\" -> \"%p\" [label=\"Left\", fontcolor=darkblue]\n", tmp->get_right(), (tmp->get_right())->get_prev());
+    }
 
     if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
-        if(tmp->get_prev() != nullptr)
-            if(tmp->get_data()->type_of_object != NUMBER)
+    {
+        if (tmp->get_prev() != nullptr)
+        {
+            if (tmp->get_data()->type_of_object != NUMBER)
                 fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%s]}| {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = lightgreen] \n", tmp, get_type_of_object(tmp->data_->type_of_object), get_value_of_object(objs, tmp->get_data()), tmp->get_left(), tmp->get_prev(), tmp->get_right());
             else
                 fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%d]}| {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = lightgreen] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_data()->value, tmp->get_left(), tmp->get_prev(), tmp->get_right());
+        }
         else
+        {
             if (tmp->get_data()->type_of_object != NUMBER)
                 fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%s]}| {<f1> left| right}| {<f2> [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), get_value_of_object(objs, tmp->get_data()), tmp->get_left(), tmp->get_right());
             else
                 fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%d]}| {<f1> left| right}| {<f2> [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_data()->value, tmp->get_left(), tmp->get_right());
+        }
+    }
     else
-       if (tmp->get_prev() == nullptr)
-           if (tmp->get_data()->type_of_object != NUMBER)
-               fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%s]}| {<f1> left| right}| {<f2> [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), get_value_of_object(objs, tmp->get_data()), tmp->get_left(), tmp->get_right());
-           else
-               fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%d]}| {<f1> left| right}| {<f2> [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_data()->value, tmp->get_left(), tmp->get_right());
-       else
-           if (tmp->get_data()->type_of_object != NUMBER)
-               fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%s]}| {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = purple] \n", tmp, get_type_of_object(tmp->data_->type_of_object), get_value_of_object(objs, tmp->get_data()), tmp->get_left(), tmp->get_prev(), tmp->get_right());
-           else
-               fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%d]}| {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = purple] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_data()->value, tmp->get_left(), tmp->get_prev(), tmp->get_right());
-
+    {
+        if (tmp->get_prev() == nullptr)
+        {
+            if (tmp->get_data()->type_of_object != NUMBER)
+                fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%s]}| {<f1> left| right}| {<f2> [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), get_value_of_object(objs, tmp->get_data()), tmp->get_left(), tmp->get_right());
+            else
+                fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%d]}| {<f1> left| right}| {<f2> [%p]| [%p]}\",style = filled, fillcolor = red] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_data()->value, tmp->get_left(), tmp->get_right());
+        }
+        else
+        {
+            if ((tmp->get_data()->type_of_object == OPERATOR) && (tmp->get_data()->value == OP_TIMES_VAL))
+                fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%s]}| {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = lightblue] \n", tmp, get_type_of_object(tmp->data_->type_of_object), get_value_of_object(objs, tmp->get_data()), tmp->get_left(), tmp->get_prev(), tmp->get_right());
+            else if (tmp->get_data()->type_of_object != NUMBER)
+                fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%s]}| {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = purple] \n", tmp, get_type_of_object(tmp->data_->type_of_object), get_value_of_object(objs, tmp->get_data()), tmp->get_left(), tmp->get_prev(), tmp->get_right());
+            else
+                fprintf(dump, "\"%p\" [label = \"{<f0> TYPE = [%s] | VALUE = [%d]}| {<f1> left| <here> prev| right}| {<f2> [%p]| [%p]| [%p]}\",style = filled, fillcolor = purple] \n", tmp, get_type_of_object(tmp->data_->type_of_object), tmp->get_data()->value, tmp->get_left(), tmp->get_prev(), tmp->get_right());
+        }
+    }
 
     return;
 
@@ -499,7 +721,7 @@ void tree::fill_tree(struct Objects* main_object)
     objs_ = main_object;
 
     root_ = get_expression();
-    printf("\n\n root = %p\n\n", root_);
+    //printf("\n\n root = %p\n\n", root_);
     print_tree();
 
     //delete tmp_object;
@@ -590,13 +812,13 @@ const char* get_value_of_object(struct Objects* objs, struct Object* obj)
 
 tree_element* tree::get_expression()
 {
-    printf("Total size is =  %d , cur_size = %d\n", objs_->number_of_objects, cur_size_);
-    printf("get_express\n");
+    //printf("Total size is =  %d , cur_size = %d\n", objs_->number_of_objects, cur_size_);
+    //printf("get_express\n");
     tree_element* tmp_element_1 = nullptr; // new tree_element;
     
     if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_MIN_VAL) || (objs_->obj[cur_size_].value == OP_PLUS_VAL)))
     {
-        printf("first operator\n");
+        //printf("first operator\n");
         tree_element* tmp_element = new tree_element;
         tmp_element->set_data(&(objs_->obj[cur_size_]));
 
@@ -613,10 +835,10 @@ tree_element* tree::get_expression()
     }
     else
     {
-        printf("no +/- , go to get_op\n");
+        //printf("no +/- , go to get_op\n");
         //printf("probably value is [%d]\n", objs_->obj[cur_size_].value);
         tmp_element_1 = get_operator();
-        printf("leave from no +/- . tmp_1 = [%d]\n", tmp_element_1->get_data()->value);
+        //printf("leave from no +/- . tmp_1 = [%d]\n", tmp_element_1->get_data()->value);
         //cur_size_++;
     }
     if (cur_size_ >= objs_->number_of_objects)
@@ -625,22 +847,22 @@ tree_element* tree::get_expression()
 
     do
     {
-        printf("In DO\n");
+        //printf("In DO\n");
         if (objs_->obj[cur_size_].type_of_object == BRACKET)
         {
-            printf("find leave bracket. LEAVE\n");
+            //printf("find leave bracket. LEAVE\n");
             if (objs_->obj[cur_size_].value == R_BRACKET_VAL)
             {
                 if ((tmp_element->get_left() == nullptr) && (tmp_element->get_right() == nullptr))
                 {
                     //delete tmp_element;
                     tmp_element = tmp_element_1;
-                    printf("leave from get_express(1) because of )\n");
+                    //printf("leave from get_express(1) because of )\n");
                     return tmp_element;
                 }
                 else
                 {
-                    printf("leave from get_express(2) because of )\n");
+                    //printf("leave from get_express(2) because of )\n");
                     return tmp_element;
                 }
             }
@@ -652,17 +874,17 @@ tree_element* tree::get_expression()
 
         if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_MIN_VAL) || (objs_->obj[cur_size_].value == OP_PLUS_VAL)))
         {
-            printf("find +/-\n");
+            //printf("find +/-\n");
             
             if ((tmp_element->get_left() != nullptr) && (tmp_element->get_right() != nullptr))
             {
-                printf("L and R isNOT nullptr\n");
+                //printf("L and R isNOT nullptr\n");
                 tree_element* new_tmp_element = new tree_element;
 
                 //tmp_element->set_data(&(objs_->obj[cur_size_]));
 
                 new_tmp_element->set_data(&(objs_->obj[cur_size_])); //set_left(tmp_element);
-                printf("new_tmp = [%s]\n", get_value_of_object(objs_, &(objs_->obj[cur_size_])));
+                //printf("new_tmp = [%s]\n", get_value_of_object(objs_, &(objs_->obj[cur_size_])));
 
                 new_tmp_element->set_right(tmp_element);
                 tmp_element->set_prev(new_tmp_element);
@@ -672,7 +894,7 @@ tree_element* tree::get_expression()
                 cur_size_++;
 
                 tmp_element_2 = get_operator();
-                printf("tmp_2 = [%s]\n", get_value_of_object(objs_, &(objs_->obj[cur_size_])));
+                //printf("tmp_2 = [%s]\n", get_value_of_object(objs_, &(objs_->obj[cur_size_])));
 
                 new_tmp_element->set_left(tmp_element_2);
                 tmp_element_2->set_prev(new_tmp_element);
@@ -683,19 +905,19 @@ tree_element* tree::get_expression()
             }
             else if ((tmp_element->get_left() == nullptr) && (tmp_element->get_right() == nullptr))
             {
-                printf("L and R nullptr\n");
+               // printf("L and R nullptr\n");
                 tmp_element->set_data(&(objs_->obj[cur_size_]));
 
                 tmp_element->set_right(tmp_element_1);
                 tmp_element_1->set_prev(tmp_element);
                 
-                printf("tmp = [%s]\n", get_value_of_object(objs_, &(objs_->obj[cur_size_])));
+                //printf("tmp = [%s]\n", get_value_of_object(objs_, &(objs_->obj[cur_size_])));
 
                 cur_size_++;
                 tree_element* tmp_element_2 = nullptr;
                 tmp_element_2 = get_operator();
-                printf("tmp_2 = [%p]\n", tmp_element_2);
-                printf("tmp_2 = [%d]\n", tmp_element_2->get_data()->value);
+                //printf("tmp_2 = [%p]\n", tmp_element_2);
+                //printf("tmp_2 = [%d]\n", tmp_element_2->get_data()->value);
 
                 tmp_element->set_left(tmp_element_2);
                 tmp_element_2->set_prev(tmp_element);
@@ -704,7 +926,7 @@ tree_element* tree::get_expression()
             else
             {
                 printf("I HAVE BAD LOGIC(((\n");
-                printf("right = %p , left = %p\n", tmp_element->get_left(), tmp_element->get_right());
+                //printf("right = %p , left = %p\n", tmp_element->get_left(), tmp_element->get_right());
             }
         }
         else
@@ -717,19 +939,18 @@ tree_element* tree::get_expression()
 
     } while ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_MIN_VAL) || (objs_->obj[cur_size_].value == OP_PLUS_VAL)));
     
-    printf("objs_->[cur_size_].type_of_object = %d\nvalue = %d\n", objs_->obj[cur_size_].type_of_object, objs_->obj[cur_size_].value);
+    //printf("objs_->[cur_size_].type_of_object = %d\nvalue = %d\n", objs_->obj[cur_size_].type_of_object, objs_->obj[cur_size_].value);
         
     //printf("tmp_elem = %p\n", tmp_element);
     //printf("tmp_elem->left = %p, value = %d\n", tmp_element, tmp_element->get_left()->get_data()->value);
    // printf("tmp_elem->right = %p, value = %d\n", tmp_element, tmp_element->get_right()->get_data()->value);
-    printf("leave from get_express (2) \n");
+    //printf("leave from get_express (2) \n");
     return tmp_element;
 }
 
-
 tree_element* tree::get_operator()
 {
-    printf("get_operator\n");
+    //printf("get_operator\n");
     tree_element* tmp_element_1 = get_pow();
     tree_element* tmp_element = new tree_element;
 
@@ -739,25 +960,25 @@ tree_element* tree::get_operator()
         //tree_element* tmp_element = new tree_element;
         tmp_element->set_right(tmp_element_1);
         tmp_element_1->set_prev(tmp_element);
-        printf("will * or /\n");
+        //printf("will * or /\n");
     }
     else
     {
         delete tmp_element;
-        printf("else\n");
+        //printf("else\n");
         //printf("return tmp_element.data = %d\n", (tmp_element_1->get_data())->value);
         //printf("tmp_1 = [%p]\n", tmp_element_1);
-        printf("leave from get_operator (1)\n");
+        //printf("leave from get_operator (1)\n");
         return tmp_element_1;
     }
 
     while ((objs_->obj[cur_size_].type_of_object == OPERATOR) && ((objs_->obj[cur_size_].value == OP_TIMES_VAL) || (objs_->obj[cur_size_].value == OP_DEL_VAL)))
     {
-        printf("find * or /\n");
+        //printf("find * or /\n");
         if ((tmp_element->get_left() != nullptr))
         {
             tree_element* new_tmp_element = new tree_element;
-            printf("set data !=nullptr\n");
+           // printf("set data !=nullptr\n");
             new_tmp_element->set_data(&(objs_->obj[cur_size_])); //set_left(tmp_element);
             new_tmp_element->set_right(tmp_element);
             tmp_element->set_prev(new_tmp_element);
@@ -777,7 +998,7 @@ tree_element* tree::get_operator()
         }
         else
         {
-            printf("set data == nullptr\n");
+            //printf("set data == nullptr\n");
             tmp_element->set_data(&(objs_->obj[cur_size_]));
             
             //tmp_element->set_right(tmp_element_1);
@@ -811,13 +1032,13 @@ tree_element* tree::get_operator()
 
    // printf("return tmp_element.data = %d\n", (tmp_element->get_data())->value);
    // printf("tmp = [%p]\n", tmp_element);
-    printf("leave from get_operator (2)\n");
+    //printf("leave from get_operator (2)\n");
     return tmp_element;
 }
 
 tree_element* tree::get_pow()
 {
-    printf("get_pow\n");
+    //printf("get_pow\n");
     tree_element* tmp_element_1 = nullptr;
 
     tmp_element_1 = get_bracket(); 
@@ -826,7 +1047,7 @@ tree_element* tree::get_pow()
 
     if ((objs_->obj[cur_size_].type_of_object == OPERATOR) && (objs_->obj[cur_size_].value == OP_POW_VAL)) // if   "^"
     {
-        printf("find pow oper\n");
+        //printf("find pow oper\n");
         //tmp_element->set_left(get_bracket()); // get_expression()
         tree_element* tmp_element_2 = nullptr;
         tree_element* tmp_element = new tree_element;
@@ -835,9 +1056,9 @@ tree_element* tree::get_pow()
 
         cur_size_++;
         
-        printf("tmp_2 before get_expression\n");
+       // printf("tmp_2 before get_expression\n");
         tmp_element_2 = get_pow(); //->set_right(get_bracket());
-        printf("tmp_2 after get_expression\n");
+        //printf("tmp_2 after get_expression\n");
 
         tmp_element->set_right(tmp_element_1);
         tmp_element->set_left(tmp_element_2);
@@ -846,11 +1067,11 @@ tree_element* tree::get_pow()
         tmp_element_2->set_prev(tmp_element);
 
 
-        printf("leave from get_pow (2)\n");
+        //printf("leave from get_pow (2)\n");
         return tmp_element;
     }
 
-    printf("leave from get_pow (1), value = %d\n", tmp_element_1->get_data()->value);
+    //printf("leave from get_pow (1), value = %d\n", tmp_element_1->get_data()->value);
    // printf("tmp_1 = [%p]\n", tmp_element_1);
     return tmp_element_1;
 
@@ -858,28 +1079,28 @@ tree_element* tree::get_pow()
 
 tree_element* tree::get_bracket()
 {
-    printf("get_bracket\n");
+    //printf("get_bracket\n");
     tree_element* tmp_element = nullptr;
 
     if (objs_->obj[cur_size_].type_of_object == BRACKET)
     {
-        printf("find bracket\n");
+       // printf("find bracket\n");
         cur_size_++;
 
         tmp_element = get_expression();
-        printf("AFTER FULL BRACKET\n");
+        //printf("AFTER FULL BRACKET\n");
         
         if (objs_->obj[cur_size_].type_of_object != BRACKET)
             printf("ERROR IN BRACKETS!! WARNING!!!!\n");
         else
             cur_size_++;
 
-        printf("leave from get_bracket (hard)\n");
+        //printf("leave from get_bracket (hard)\n");
         return tmp_element;
     }
     else
     {
-        printf("leave from get_bracket (simple)\n");
+        //printf("leave from get_bracket (simple)\n");
         return get_number();
     }
     //printf("tmp_element = [%p]");
@@ -889,7 +1110,7 @@ tree_element* tree::get_bracket()
 
 tree_element* tree::get_number()
 {
-    printf("get_number\n");
+    //printf("get_number\n");
     tree_element* tmp_element = new tree_element;
     
     //tmp_element = objs_->obj[cur_size];
@@ -898,7 +1119,7 @@ tree_element* tree::get_number()
 
     cur_size_++;
 
-    printf("leave from get_number, value = %d\n", tmp_element->get_data()->value);
-    printf("type is [%s]\n", get_type_of_object(tmp_element->get_data()->type_of_object));
+    //printf("leave from get_number, value = %d\n", tmp_element->get_data()->value);
+    //printf("type is [%s]\n", get_type_of_object(tmp_element->get_data()->type_of_object));
     return tmp_element; //tmp_element;
 }

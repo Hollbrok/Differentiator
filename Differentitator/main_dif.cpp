@@ -18,12 +18,17 @@ int main(int argc, int argv[])
 	tree dif_tree("main_differenciator");
 
 	dif_tree.fill_tree(objs);
+	
+	tree_element* new_tree_root = dif_tree.differenciate(dif_tree.get_root());
 
-	tree* new_tree = dif_tree.differenciate(dif_tree.get_root());
+	tree* new_tree = new tree;
+
+	new_tree->set_root(new_tree_root);
+	new_tree->objs_ = dif_tree.objs_;
 
 	new_tree->print_tree();
 
-	Objs_destructor(objs);
+	//Objs_destructor(objs);
 
 	return 0;
 }
