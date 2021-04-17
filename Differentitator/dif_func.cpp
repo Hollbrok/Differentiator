@@ -266,12 +266,15 @@ int find_place(char* variables_names[NUMBER_OF_VARIABLES])
 void Objs_destructor(struct Objects* objs)
 {
 
-	delete[] objs->obj;
-	objs->obj = nullptr;
-	//printf("2");
+	if (objs)
+	{
+		delete[] objs->obj;
+		objs->obj = nullptr;
+	}
+
 	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
 	{
-		//printf("p = %p", objs->variables_names[i]);
+		
 		delete[] objs->variables_names[i];
 		objs->variables_names[i] = nullptr;
 	}

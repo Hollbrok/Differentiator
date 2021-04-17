@@ -114,7 +114,7 @@ public:
 
 	void show_tree() const;
 
-	void fill_tree(Objects* main_object);
+	void fill_tree(Objects* main_object, bool need_print = false);
 
 	tree_element* get_expression();
 
@@ -130,10 +130,12 @@ public:
 
 	tree_element* differenciate(tree_element* new_root);
 
+	void make_article();
+
 };
 
 
-void print_all_elements_beauty(tree_element* tmp, FILE* dump);
+void print_all_elements_beauty(tree_element* tmp, FILE* dump, struct Objects* objs);
 
 long size_of_file(FILE* user_code);
 char* make_buffer(const char* name_file);
@@ -144,5 +146,17 @@ void print_all_elements(tree_element* tmp, FILE* dump, struct Objects* objs);
 
 const char* get_type_of_object(TYPE type);
 const char* get_value_of_object(struct Objects* objs, struct Object* obj);
+
+void Objs_destructor(struct Objects* objs);
+Object* create_object(int type, int value);
+tree_element* create_root(struct Object* obj, tree_element* left = nullptr, tree_element* right = nullptr, tree_element* prev = nullptr);
+
+
+void print_title(FILE* tex);
+void print_1_section(FILE* tex);
+void print_2_section(FILE* tex);
+
+void print_conclusion(FILE* tex);
+void print_used_books(FILE* tex);
 
 #endif // TREE_H_INCLUDED

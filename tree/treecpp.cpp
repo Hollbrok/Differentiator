@@ -1,6 +1,10 @@
 ﻿#include "tree.h"
 
-#define PRINT_UNDEFINE_OP_VALUE                                    \
+const double exp_value = 2.7182818284;
+
+bool is_free_objs = false;
+
+#define PRINT_UNDEFINE_OP_VALUE                                 \
     printf("Undefined OP value = [%s]\n", get_value_of_object(objs_, start_root->get_data()))
 
 #define PRINT_UNDEFINE_TYPE                                     \
@@ -9,16 +13,17 @@
 #define PRINT_UNDEFINE_FUNC                                     \
     printf("Undefinied func = [%s]\n", get_value_of_object(objs_, start_root->get_data()))
 
-
-
 #define ADD_OR_SUB(obj, left, right)                            \
     create_root(obj, left, right)
 
-#define ADDITION(obj, left, right)                              \
-    create_root(obj, left, right)
+#define ADDITION(left, right)                                   \
+    create_root(CR_ADD, left, right)
 
-#define MULTIPLY(obj, left, right)                              \
-    create_root(obj, left, right)
+#define MULTIPLY(left, right)                                   \
+    create_root(CR_MUL, left, right)
+
+#define EXPONENTIATION(left, right)                             \
+    create_root(CR_MUL, left, right)
 
 #define dR                                                      \
     differenciate(start_root->get_right())
@@ -35,6 +40,15 @@
 #define copyR                                                   \
     copy_subtree(start_root->get_right())
 
+#define copyF                                                   \
+    copy_subtree(start_root)
+
+#define CR_LN                                                   \
+    create_object(FUNCTION, LN_VAL)
+
+#define CR_MUL                                                  \
+    create_object(OPERATOR, OP_TIMES_VAL)
+
 #define CR_ADD                                                  \
     create_object(OPERATOR, OP_PLUS_VAL)
     
@@ -47,11 +61,211 @@
 #define GET_TYPE                                                \
     start_root->get_data_type()
 
-void Objs_destructor(struct Objects* objs);
+void tree::make_article()
+{
+    assert(this && "Can't do article without tree");
 
-Object* create_object(int type, int value);
+    FILE* tex = fopen("main.tex", "wb");
+    assert(tex && "Can't open main.tex file");
 
-tree_element* create_root(struct Object* obj, tree_element* left = nullptr, tree_element* right = nullptr, tree_element* prev = nullptr);
+    print_title(tex);
+    print_1_section(tex);
+    print_2_section(tex);
+
+    //!! main_print(tex);
+
+    print_conclusion(tex);
+
+    print_used_books(tex);
+
+    fprintf(tex, "\\end{document}\n");
+
+    fclose(tex);
+
+    system("iconv.exe -t UTF-8 -f CP1251 < main.tex > temp_main.tex");
+    system("del main.tex");
+    system("ren temp_main.tex main.tex");
+    system("pdflatex main.tex");
+    system("start main.pdf");
+
+   
+    return;
+
+}
+
+void print_title(FILE* tex)
+{
+    assert(tex);
+
+    fprintf(tex, "\\documentclass[a4paper,12pt]{article} \n"
+        "\n"
+        "\n"
+        "\n"
+        "\\usepackage[utf8]{inputenc}\n"
+        "\\usepackage[english, russian]{babel}\n"
+        "\\usepackage{caption}\n"
+        "\\usepackage{listings}\n"
+        "\\usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools }\n"
+        "\\usepackage{wasysym}\n"
+        "\\usepackage{graphicx}\n"
+        "\\usepackage{float} \n"
+        "\\usepackage{wrapfig} \n"
+        "\\usepackage{fancyhdr} \n"
+        "\\usepackage{lscape}\n"
+        "\\usepackage{xcolor}\n"
+        "\\usepackage[normalem]{ ulem }\n"
+        "\\usepackage{hyperref}\n"
+        "\n"
+        "\n"
+        "\n"
+        "\n"
+        "\n"
+        "\\hypersetup\n"
+        "{\n"
+        "    colorlinks = true,\n"
+        "    linkcolor = blue,\n"
+        "    filecolor = magenta,\n"
+        "    urlcolor = blue\n"
+        "}\n"
+        "\n"
+        "\n"
+        "\\pagestyle{fancy}\n"
+        "\\fancyhead{}\n"
+        "\\fancyhead[L]{ 2.2.8 }\n"
+        "\\fancyhead[R]{ Талашкевич Даниил, 2 положительная группа крови}\n"
+        "\\fancyfoot[C]{ \\thepage }\n"
+        "\n"
+        "\n"
+        "\n"
+        "\\begin{document}\n"
+        "\n"
+        "\n"
+        "\\begin{titlepage}\n"
+        "\n"
+        "\\newpage\n"
+        "\\begin{center}\n"
+        "\\normalsize Московский физико - технический институт //госудраственный университет)\n"
+        "\\end{center}\n"
+        "\n"
+        "\\vspace{6em}\n"
+        "\n"
+        "\\begin{center}\n"
+        "\\Large Домашняя работа по Физической культуре\\\\\n"
+        "\\end{center}\n"
+        "\n"
+        "\\vspace{1em}\n"
+        "\n"
+        "\\begin{center}\n"
+        "\\large \\textbf{ Исследование термических эффектов,\n"
+        "возникающих при упругих деформациях[2.2.8] }\n"
+        "\\end{center}\n"
+        "\n"
+        "\\vspace{2em}\n"
+        "\n"
+        "\\begin{center}\n"
+        "\\large П$ ^ 3$ : Полная Полтрашка Патриковна и Талашкевич Даниил Александрович \\\\\n"
+        "Группа Б01 - \\href{ https://vk.com/rt_kiska }{\\textbf{Гладим киску каждый день}}\n"
+        "\\end{center}\n"
+        "\n"
+        "\\vspace{\\fill}\n"
+        "\n"
+        "\\begin{center}\n"
+        "    \\large Иерусалим \\\\ 2 век до н.э.\n"
+        "\\end{center}\n"
+        "\n"
+        "\\end{titlepage}\n"
+        "\n"
+        "\n"
+        "\n"
+        "    \\thispagestyle{empty}\n"
+        "    \\newpage\n"
+        "    \\tableofcontents\n"
+        "    \\newpage\n"
+        "    \\setcounter{page}{1}\n"
+        "\n"
+        "\n");
+
+
+    return;
+}
+
+void print_1_section(FILE* tex)
+{
+    assert(tex);
+
+    fprintf(tex, "\\section{Введение в историю Иерусалима}\n\n"
+        "Древнейшая часть Иерусалима была заселена в 4 - м тысячелетии до н.э.,"
+        " что делает его одним из древнейших городов мира.За свою долгую историю,"
+        " Иерусалим был как минимум дважды разрушен, 23 раза осаждён, 52 раза атакован"
+        " и 44 раза завоёван либо вновь отвоёван.В разное время городом владели Израильское царство,"
+        " Иудейское царство, Вавилон, Персидская империя и империя Александра Македонского, Египет Птолемеев,"
+        " Сирия Селевкидов.После еврейского восстания во II веке до н.э.на некоторое время было восстановлено"
+        " Иудейское Царство, но уже в 6 году н.э.на месте него была провозглашена римская провинция Иудея."
+        " Вслед за распадом Римской империи, Иерусалим отошёл к Византии.После Византии город принадлежал"
+        " арабским халифатам, крестоносцам, государствам Айюбидов и мамлюков, Османской и затем Британской"
+        " империям, Иордании и, наконец, Израилю. Учитывая центральное место, отводимое Иерусалиму как"
+        " еврейским(сионизм), так и палестинским национализмом, на избирательность, неизбежную при"
+        " резюмировании более чем 5000 - летней истории его населённости, часто накладывается идеологическая"
+        " предвзятость или предшествующий опыт авторов.Еврейские периоды истории города важны для израильских"
+        " националистов, дискурс которых предполагает, что современные евреи происходят от израэлитов и"
+        " Маккавеев в то время как исламский, христианский и другие нееврейские периоды его истории важны"
+        " для палестинского национализма, дискурс которого производит современных палестинцев от всех"
+        " разнообразных народов, населявших регион В результате каждая из сторон утверждает, что история"
+        " города была политизирована оппонентами, дабы подкрепить притязания последних на город, и что это"
+        " подтверждается разностью акцентов, придаваемых различными авторами разнообразным событиям и эрам в истории города.\n\n");
+
+
+    return;
+}
+
+void print_2_section(FILE* tex)
+{
+    assert(tex);
+
+    fprintf(tex, "\\section{Как древние греки считали производные}\n"
+        "Для того, чтобы вычислять производную греки поступили очень умно :"
+        " они построили машину времени, переместились в 2021 год н.э., затем"
+        " на крысичях украли мой \textbf{ exe } - шник и данную статью с подробнейшим"
+        " описанием как искать ее в 2021 году, затем вернулись обратно и сковозь долгие"
+        " годы они научились все - таки ее брать.Вы наверное подумаете, что это все чисто"
+        " воды обман и выдумка, но у меня есть на то доказательства : \\newpage\n"
+        "\n \\begin{figure}[h]\n"
+        " \\center{ \\includegraphics[scale = 1]{proof.jpg} }\n"
+        " \\label{ photo1:1 }\n"
+        " \\end{figure}\n\n"
+        " На данном фото видно, как они внаглую просто переписывают мой код!!!!"
+        " P.S.Фото взято из архивов национального музея наследний ЮНЕСКО\n\n");
+
+    return;
+}
+
+void print_conclusion(FILE* tex)
+{
+    assert(tex);
+
+    fprintf(tex, "\\section{Заключение}\n"
+        " При выполнение домашней работы по физической культуре"
+        " я узнал про историю Иерусалима, познакомился с тем,"
+        " как греки считали производные, а так же сам научился"
+        " считать производную по шагам!\n");
+
+    return;
+}
+
+void print_used_books(FILE* tex)
+{
+    assert(tex);
+
+    fprintf(tex, "\\section{Используемые тренажеры}\n"
+        " \\begin{enumerate}\n"
+        " \\item Скакалка\n"
+        " \\item Эскандер\n"
+        " \\item Крижометр (отдельное спасибо Крижовичу за то, что предоставил его мне!)\n"
+        " \\item Коксовая дорожка\n"
+        " \\end{enumerate}\n");
+
+    return;
+}
 
 Object* create_object(int type, int value)
 {
@@ -97,18 +311,11 @@ tree_element* tree::differenciate(tree_element* start_root)
                     return ADD_OR_SUB(create_object(OPERATOR, GET_VAL), dL, dR);
                 
                 case OP_TIMES_VAL:
-                    return ADDITION(CR_ADD, 
-                                    MULTIPLY(create_object(OPERATOR, OP_TIMES_VAL), dL, copyR), 
-                                    MULTIPLY(create_object(OPERATOR, OP_TIMES_VAL), dR, copyL) 
-                                   );
-                case OP_POW_VAL: // WORKD ONLY IF 2^x, not for x^2. I NEED TO ADD DIFFERENT CASES OR 1 GENERAL
-                {
-                    printf("%p\n", start_root);
-                    tree_element* tmp = create_root(create_object(OPERATOR, OP_TIMES_VAL),
-                        create_root(create_object(OPERATOR, OP_TIMES_VAL), differenciate(copyR), create_root(create_object(FUNCTION, LN_VAL), copyL)),
-                        copy_subtree(start_root));
-                    return tmp;
-                }
+                    return ADDITION(MULTIPLY(dL, copyR), MULTIPLY(dR, copyL));
+
+                case OP_POW_VAL: // NOW ITS GENERAL. Am I need add not only general method but differ cases to 2^x, x^2, x^f(x) ...
+                    return EXPONENTIATION(differenciate(create_root(CR_MUL, copyR, create_root(CR_LN, copyL))), copyF);
+                
                 default:
                     PRINT_UNDEFINE_OP_VALUE;
             }
@@ -141,10 +348,7 @@ tree_element* tree::differenciate(tree_element* start_root)
 tree_element* tree_element::copy_subtree(tree_element* start_element)
 {
     tree_element* new_start = new tree_element;
-    //new_start->set_data(start_element->get_data());
 
-    printf("3 if\n");
-    //delete new_start;
     struct Object* obj = new Object;
     obj->type_of_object = start_element->get_data()->type_of_object;
     obj->value = start_element->get_data()->value;
@@ -154,22 +358,16 @@ tree_element* tree_element::copy_subtree(tree_element* start_element)
     if ((start_element->get_left() == nullptr) && (start_element->get_right() == nullptr))
     {
         return new_start;
-        //new_start->set_prev(start_element->get_prev());
-        //return new_start;
     }
     if (start_element->get_left() != nullptr)
     {
-        printf("1 if\n");
         tree_element* left_subtree = copy_subtree(start_element->get_left());
         new_start->set_left(left_subtree);
-        //new_start->add_to_left(left_subtree);//new_start->set_right(copy_right_subtree(start_element->get_right()));
         left_subtree->set_prev(new_start);
     }
     if (start_element->get_right() != nullptr)
     {
-        printf("2 if\n");
         tree_element* right_subtree = copy_subtree(start_element->get_right());
-        //new_start->add_to_right(right_subtree);//new_start->set_right(copy_right_subtree(start_element->get_right()));
         new_start->set_right(right_subtree);
         right_subtree->set_prev(new_start);
     }
@@ -187,7 +385,6 @@ tree_element* tree_element::add_to_left(tree_element* new_element)
     tmp->set_prev(this);
     tmp->set_right(nullptr);
     tmp->set_left(nullptr);
-    //tmp->set_data(number);
 
     this->set_left(tmp);
 
@@ -204,7 +401,6 @@ tree_element* tree_element::add_to_right(tree_element* new_element)
     tmp->set_prev(this);
     tmp->set_right(nullptr);
     tmp->set_left(nullptr);
-    //tmp->set_data(number);
 
     this->set_right(tmp);
 
@@ -217,7 +413,6 @@ tree_element::tree_element(data_type data, tree_element* prev, tree_element* lef
     left_(left),
     right_(right)
 {
-    //assert(this && "You passed nullptr to list_elem construct");
 }
 
 tree_element::~tree_element()
@@ -228,19 +423,7 @@ tree_element::~tree_element()
     prev_ = nullptr;
     left_ = nullptr;
     right_ = nullptr;
-
-    if (data_)
-    {
-        printf("STRANGE  AFAGAGGG\n");
-        //delete[] data_;
-        //data_ = nullptr;
-    }
-    if (false)
-    {
-        //delete this;
-        //this = nullptr;
-    }
-
+    
 }
 
 tree::tree(const char* name) :
@@ -269,20 +452,12 @@ tree::~tree()
     {
         delete this;
     }
-    if (objs_)
+    if (!is_free_objs)
     {
         Objs_destructor(objs_);
+        is_free_objs = true;
     }
-        /*
-    if (buffer_)
-    {
-        delete[] buffer_;
-        buffer_ = nullptr;
-    }
-    else
-        printf("No buffer\n");
-        */
-
+   
     cur_size_ = -1;
     error_state_ = -1;
     name_ = nullptr;
@@ -521,7 +696,7 @@ void tree::graphviz_beauty_dump(const char* dumpfile_name) const
 
     tree_element* root = root_;
 
-    print_all_elements_beauty(root, dump);
+    print_all_elements_beauty(root, dump, objs_);
     fprintf(dump, "}\n");
 
     fclose(dump);
@@ -575,13 +750,11 @@ void print_all_elements(tree_element* tmp, FILE* dump, struct Objects* objs)
     {
         print_all_elements(tmp->get_left(), dump, objs);
         fprintf(dump, "\"%p\" -> \"%p\" [label=\"Left\", fontcolor=darkblue]\n", tmp, tmp->get_left());
-        //fprintf(dump, "\"%p\" -> \"%p\" [label=\"Right\", fontcolor=darkblue]\n", tmp->get_left(), (tmp->get_left())->get_prev());
     }
     if (tmp->get_right())
     {
         print_all_elements(tmp->get_right(), dump, objs);
         fprintf(dump, "\"%p\" -> \"%p\" [label=\"Right\", fontcolor=darkblue]\n", tmp, tmp->get_right());
-        //fprintf(dump, "\"%p\" -> \"%p\" [label=\"Left\", fontcolor=darkblue]\n", tmp->get_right(), (tmp->get_right())->get_prev());
     }
 
     if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
@@ -622,58 +795,64 @@ void print_all_elements(tree_element* tmp, FILE* dump, struct Objects* objs)
     }
 
     return;
-
 }
 
-void print_all_elements_beauty(tree_element* tmp, FILE* dump)
+void print_all_elements_beauty(tree_element* tmp, FILE* dump, struct Objects* objs)
 {
     assert(tmp && "tmp is nullptr in print_all_elements");
 
-    if (tmp->get_right())
-    {
-        print_all_elements_beauty(tmp->get_right(), dump);
-        //fprintf(dump, "\"%p\" -> \"%p\" [label=\"Yes\", fontcolor=darkblue]\n", tmp, tmp->get_right());
-    }
     if (tmp->get_left())
     {
-        print_all_elements_beauty(tmp->get_left(), dump);
-       // fprintf(dump, "\"%p\" -> \"%p\" [label=\"No\", fontcolor=darkblue]\n", tmp, tmp->get_left());
+        print_all_elements_beauty(tmp->get_left(), dump, objs);
+        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Left\", fontcolor=darkblue]\n", tmp, tmp->get_left());
+    }
+    if (tmp->get_right())
+    {
+        print_all_elements_beauty(tmp->get_right(), dump, objs);
+        fprintf(dump, "\"%p\" -> \"%p\" [label=\"Right\", fontcolor=darkblue]\n", tmp, tmp->get_right());
     }
 
-    //if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
-        //fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = lightgreen] \n", tmp, tmp->length_, tmp->non_const_get_data());
-    //else
-        //if (tmp->get_prev() == nullptr)
-            //fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = red] \n", tmp, tmp->length_, tmp->non_const_get_data());
-        //else
-            //fprintf(dump, "\"%p\" [label = \"%.*s\",style = filled, fillcolor = purple] \n", tmp, tmp->length_, tmp->non_const_get_data());
+    if ((tmp->get_right() == nullptr) && (tmp->get_left() == nullptr))
+    {
+            if (tmp ->get_data()->type_of_object != NUMBER)
+                fprintf(dump, "\"%p\" [label = \"%s\",style = filled, fillcolor = lightgreen] \n", tmp, get_value_of_object(objs, tmp->get_data()));
+            else
+                fprintf(dump, "\"%p\" [label = \"%d\",style = filled, fillcolor = lightgreen] \n", tmp, tmp->get_data()->value);
+    }
+    else
+    {
+        if (tmp->get_prev() == nullptr)
+        {
+            if (tmp->get_data()->type_of_object != NUMBER)
+                fprintf(dump, "\"%p\" [label = \"%s\",style = filled, fillcolor = red] \n", tmp, get_value_of_object(objs, tmp->get_data()));
+            else
+                fprintf(dump, "\"%p\" [label = \"%d\",style = filled, fillcolor = red] \n", tmp, tmp->get_data()->value);
+        }
+        else
+        {
+            if ((tmp->get_data()->type_of_object == OPERATOR) && (tmp->get_data()->value == OP_TIMES_VAL))
+                fprintf(dump, "\"%p\" [label = \"%s\",style = filled, fillcolor = lightblue] \n", tmp, get_value_of_object(objs, tmp->get_data()));
+            else if (tmp->get_data()->type_of_object != NUMBER)
+                fprintf(dump, "\"%p\" [label = \"%s\",style = filled, fillcolor = purple] \n", tmp, get_value_of_object(objs, tmp->get_data()));
+            else
+                fprintf(dump, "\"%p\" [label = \"%d\",style = filled, fillcolor = purple] \n", tmp, tmp->get_data()->value);
+        }
+    }
+
     return;
 }
 
-void tree::fill_tree(struct Objects* main_object)
+void tree::fill_tree(struct Objects* main_object, bool need_print)
 {
     assert(this && "Nullptr in tree");
     assert(main_object && "nullptr Objects struct");
 
-
-    //tree_element* tmp_element = new tree_element;
-
-    //struct Object* tmp_object= new struct Object;
-
-    //tmp_object->type_of_object = main;
-    //tmp_object->type_of_object = main_object->obj[0].value;
-
-    //tmp_element->data_ = &(main_object->obj[0]); //->set_data((main_object->obj)[0]);
-  
-    //root_ = tmp_element;
     objs_ = main_object;
 
     root_ = get_expression();
-    //printf("\n\n root = %p\n\n", root_);
-    print_tree();
 
-    //delete tmp_object;
-    //delete tmp_element;
+    if(need_print)
+        show_tree();
 
     return;
 }
@@ -699,8 +878,6 @@ const char* get_type_of_object(TYPE type)
 
 const char* get_value_of_object(struct Objects* objs, struct Object* obj) 
 {
-    //const char* message = {};//nullprt;
-    
     if (obj->type_of_object == VARIABLE)
     {
         return objs->variables_names[obj->value];
@@ -729,6 +906,8 @@ const char* get_value_of_object(struct Objects* objs, struct Object* obj)
                 return "cos";
             case LN_VAL:
                 return "ln";
+            case EXP_VAL:
+                return "exp";
             default:
                 return "UNINDENTIFIED TYPE";
         }
@@ -796,7 +975,7 @@ tree_element* tree::get_expression()
 
                 new_tmp_element->set_data(&(objs_->obj[cur_size_])); 
 
-                new_tmp_element->set_right(tmp_element);
+                new_tmp_element->set_left(tmp_element);
                 tmp_element->set_prev(new_tmp_element);
 
                 tree_element* tmp_element_2 = nullptr;
@@ -805,7 +984,7 @@ tree_element* tree::get_expression()
 
                 tmp_element_2 = get_operator();
 
-                new_tmp_element->set_left(tmp_element_2);
+                new_tmp_element->set_right(tmp_element_2);
                 tmp_element_2->set_prev(new_tmp_element);
 
                 tree_element* swap = tmp_element;
@@ -816,14 +995,14 @@ tree_element* tree::get_expression()
             {
                 tmp_element->set_data(&(objs_->obj[cur_size_]));
 
-                tmp_element->set_right(tmp_element_1);
+                tmp_element->set_left(tmp_element_1);
                 tmp_element_1->set_prev(tmp_element);
                 
                 cur_size_++;
                 tree_element* tmp_element_2 = nullptr;
                 tmp_element_2 = get_operator();
 
-                tmp_element->set_left(tmp_element_2);
+                tmp_element->set_right(tmp_element_2);
                 tmp_element_2->set_prev(tmp_element);
 
             }

@@ -3,6 +3,9 @@
 
 int main(int argc, int argv[])
 {
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+
 	FILE* text = fopen("text.txt", "r");
 	//fopen_s(&text, "text.txt", "rb");
 
@@ -17,18 +20,10 @@ int main(int argc, int argv[])
 
 	tree dif_tree("main_differenciator");
 
-	dif_tree.fill_tree(objs);
+	dif_tree.fill_tree(objs, true);
 	
-	tree_element* new_tree_root = dif_tree.differenciate(dif_tree.get_root());
+	dif_tree.make_article();
 
-	tree* new_tree = new tree;
-
-	new_tree->set_root(new_tree_root);
-	new_tree->objs_ = dif_tree.objs_;
-
-	new_tree->print_tree();
-	//printf("1\n");
-//	Objs_destructor(objs);
 	printf("Successfull complete\n");
 	return 0;
 }
