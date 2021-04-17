@@ -17,8 +17,10 @@
 #include <stdlib.h>
 
 
-const int NUMBER_OF_VARIABLES = 10;
-const int MAX_NAME_SIZE = 10;
+constexpr int NUMBER_OF_VARIABLES = 10;
+constexpr int MAX_NAME_SIZE = 10;
+
+constexpr int MAX_FORMULA_SIZE = 300;
 
 using TYPE = int;
 using VALUE = int;
@@ -73,7 +75,18 @@ enum FACTIONS_VALUES
 	SIN_VAL			= 10,
 	COS_VAL			= 11,
 	LN_VAL			= 12,
+	TG_VAL			= 13,
+	CTG_VAL			= 14,
+	SH_VAL			= 15,
+	CH_VAL			= 16,
 };
+
+enum NUMBER_CONSTANTS
+{
+	EXP_VAL = 20,
+	PI_VAL	= 21,
+};
+
 
 /* Debug memory allocation support */
 #ifndef NDEBUG 

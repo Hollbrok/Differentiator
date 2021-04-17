@@ -46,6 +46,7 @@ public:
 	data_type& get_data() { assert(this && "You passed nullptr to get_data()"); return data_; };
 
 	VALUE get_data_value() { return data_->value; };
+	char* get_data_value_str() { return (char*)data_->value; }
 	TYPE get_data_type() { return data_->type_of_object; };
 
 	tree_element* get_left() { assert(this && "nullptr tree_element in get_next()"); return left_; };
@@ -132,6 +133,11 @@ public:
 
 	void make_article();
 
+	void print_subtree(tree_element* start_root, char* buffer);
+	char* get_formula(tree_element* start_root);
+
+	void main_print(FILE* tex);
+
 };
 
 
@@ -158,5 +164,7 @@ void print_2_section(FILE* tex);
 
 void print_conclusion(FILE* tex);
 void print_used_books(FILE* tex);
+
+int hm_elements(tree_element* root);
 
 #endif // TREE_H_INCLUDED

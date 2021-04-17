@@ -2,7 +2,21 @@
 
 const double exp_value = 2.7182818284;
 
+int FORMULA_COUNTER = 1;
+
 bool is_free_objs = false;
+
+#define L_AND_R_NULL(root)                                      \
+    ( (root->get_left() == nullptr) && (root->get_right() == nullptr) )
+
+#define L_OR_R_NULL(root)                                       \
+    ( (root->get_left() == nullptr) || (root->get_right() == nullptr) )
+
+#define Lroot(root)                                             \
+    root->get_left()
+
+#define Rroot(root)                                             \
+    root->get_right()
 
 #define PRINT_UNDEFINE_OP_VALUE                                 \
     printf("Undefined OP value = [%s]\n", get_value_of_object(objs_, start_root->get_data()))
@@ -26,19 +40,19 @@ bool is_free_objs = false;
     create_root(CR_MUL, left, right)
 
 #define dR                                                      \
-    differenciate(start_root->get_right())
+    differenciate(Rroot(start_root))
 
 #define dL                                                      \
-    differenciate(start_root->get_left())
+    differenciate(Lroot(start_root))
 
 #define POWER()                                                 \
     create_root()
 
 #define copyL                                                   \
-    copy_subtree(start_root->get_left())
+    copy_subtree(Lroot(start_root))
 
 #define copyR                                                   \
-    copy_subtree(start_root->get_right())
+    copy_subtree(Rroot(start_root))
 
 #define copyF                                                   \
     copy_subtree(start_root)
@@ -61,6 +75,146 @@ bool is_free_objs = false;
 #define GET_TYPE                                                \
     start_root->get_data_type()
 
+int hm_elements(tree_element* root)
+{
+    int hm = 0;
+
+    if (L_AND_R_NULL(root))
+    {
+        hm += 1;
+    }
+    else
+    {
+        if (Lroot(root) != nullptr)
+        {
+            hm += hm_elements(Lroot(root));
+        }
+        if (Rroot(root) != nullptr)
+        {
+            hm += hm_elements(Rroot(root));
+        }
+
+        hm += 1;
+    }
+
+    return hm;
+}
+
+char* tree::get_formula(tree_element* start_root)
+{
+    printf("elements = %d\n", hm_elements(start_root));
+
+    char* buffer = new char[MAX_FORMULA_SIZE] {0};
+
+    //printf("\n");
+    strcat(buffer, "\\begin{equation}\n");
+    print_subtree(start_root, buffer);
+
+
+   // char* label_counter = new char[20]{0};
+    
+    //strcat(label_counter, "\\label{ ");
+   // label_counter[]
+
+    //_itoa(FORMULA_COUNTER, label_counter, 10);
+
+   // strcat(label_counter, "}\n");
+    //printf("[%s]\n", label_counter);
+    //strcat(buffer, label_counter);
+    strcat(buffer, "\n\\end{equation} \n");
+
+    //delete[] label_counter;
+
+    //printf("[%s]\n", buffer);
+
+    //printf("\n");
+    //delete[] buffer;
+    return buffer;
+}
+
+void tree::print_subtree(tree_element* start_root, char* buffer)
+{
+    switch (GET_TYPE)
+    {
+        case OPERATOR:
+        {
+            switch (GET_VAL)
+            {
+
+
+                case OP_TIMES_VAL:
+                {
+                    strcat(buffer, "\\large(");
+                    print_subtree(Lroot(start_root), buffer);
+                    strcat(buffer, "\\large) \\cdot \\large(");
+                    print_subtree(Rroot(start_root), buffer);
+                    strcat(buffer, "\\large)");
+                    break;
+                }
+                case OP_DEL_VAL:
+                {
+                    strcat(buffer, "\\frac{");
+                    print_subtree(Lroot(start_root), buffer);
+                    strcat(buffer, "}{");//strcat(buffer, "\\cdot");
+                    print_subtree(Rroot(start_root), buffer);
+                    strcat(buffer, "} ");
+                    break;
+                }
+                case OP_POW_VAL:
+                {
+                    print_subtree(Lroot(start_root), buffer);
+                    strcat(buffer, "^{");
+                    print_subtree(Rroot(start_root), buffer);
+                    strcat(buffer, "} ");
+                    break;
+                }
+                case OP_MIN_VAL:
+                case OP_PLUS_VAL:
+                {
+                    print_subtree(Lroot(start_root), buffer);
+                    strcat(buffer, get_value_of_object(objs_, start_root->get_data()));
+                    print_subtree(Rroot(start_root), buffer);
+                    break;
+                }
+                default:
+                    break;
+            }
+            return;
+            break;
+        }
+        case NUMBER:
+        {
+            char* number = new char[20];
+         
+            _itoa(start_root->get_data_value(), number, 10);
+            strcat(buffer, number);
+            
+            delete[] number;
+            return;
+            break;
+        }
+        case VARIABLE:
+        {
+            strcat(buffer, get_value_of_object(objs_, start_root->get_data()));
+            return;
+            break;
+        }
+        case FUNCTION:
+        {
+            strcat(buffer, "\\");
+            strcat(buffer, get_value_of_object(objs_, start_root->get_data()));
+            strcat(buffer, "(");
+            print_subtree(Lroot(start_root), buffer);
+            strcat(buffer, ") ");
+            break;
+        }
+        default:
+            PRINT_UNDEFINE_TYPE;
+            return;
+    }
+    return;
+}
+
 void tree::make_article()
 {
     assert(this && "Can't do article without tree");
@@ -72,7 +226,7 @@ void tree::make_article()
     print_1_section(tex);
     print_2_section(tex);
 
-    //!! main_print(tex);
+    main_print(tex);
 
     print_conclusion(tex);
 
@@ -91,6 +245,43 @@ void tree::make_article()
    
     return;
 
+}
+
+void tree::main_print(FILE* tex)
+{
+    assert(tex);
+
+    fprintf(tex, "\\section{Как вычислить производную в 2021 году}\n\n");
+
+    fprintf(tex, "Сейчас научим тупых греков считать прозводную на следующем примере:\n");
+
+    char* formula = get_formula(get_root());
+
+    fprintf(tex, formula);
+    delete[] formula;
+
+    fprintf(tex, "\n");
+
+
+    fprintf(tex, "Чтобы греки сильно уж не зазнались я решил пропустить все шаги вычисления"
+        ", иначе бы греки быстро развились и возможно я не родился, а мне нравится жить).\n\n Встречайте результат:\n");
+
+    tree_element* new_tree_root = differenciate(get_root());
+
+    tree* new_tree = new tree;
+
+    new_tree->set_root(new_tree_root);
+    new_tree->objs_ = objs_;
+
+    new_tree->show_tree();
+
+    char* formula2 = get_formula(new_tree->get_root());
+
+    fprintf(tex, formula2);
+    delete[] formula2;
+
+
+    return;
 }
 
 void print_title(FILE* tex)
@@ -194,23 +385,23 @@ void print_1_section(FILE* tex)
     assert(tex);
 
     fprintf(tex, "\\section{Введение в историю Иерусалима}\n\n"
-        "Древнейшая часть Иерусалима была заселена в 4 - м тысячелетии до н.э.,"
-        " что делает его одним из древнейших городов мира.За свою долгую историю,"
+        "Древнейшая часть Иерусалима была заселена в 4-м тысячелетии до н.э.,"
+        " что делает его одним из древнейших городов мира. За свою долгую историю,"
         " Иерусалим был как минимум дважды разрушен, 23 раза осаждён, 52 раза атакован"
-        " и 44 раза завоёван либо вновь отвоёван.В разное время городом владели Израильское царство,"
+        " и 44 раза завоёван либо вновь отвоёван.\n\nВ разное время городом владели Израильское царство,"
         " Иудейское царство, Вавилон, Персидская империя и империя Александра Македонского, Египет Птолемеев,"
-        " Сирия Селевкидов.После еврейского восстания во II веке до н.э.на некоторое время было восстановлено"
-        " Иудейское Царство, но уже в 6 году н.э.на месте него была провозглашена римская провинция Иудея."
-        " Вслед за распадом Римской империи, Иерусалим отошёл к Византии.После Византии город принадлежал"
+        " Сирия Селевкидов. После еврейского восстания во II веке до н.э. на некоторое время было восстановлено"
+        " Иудейское Царство, но уже в 6 году н.э. на месте него была провозглашена римская провинция Иудея."
+        " Вслед за распадом Римской империи, Иерусалим отошёл к Византии. После Византии город принадлежал"
         " арабским халифатам, крестоносцам, государствам Айюбидов и мамлюков, Османской и затем Британской"
-        " империям, Иордании и, наконец, Израилю. Учитывая центральное место, отводимое Иерусалиму как"
-        " еврейским(сионизм), так и палестинским национализмом, на избирательность, неизбежную при"
+        " империям, Иордании и, наконец, Израилю.\n\n Учитывая центральное место, отводимое Иерусалиму как"
+        " еврейским, так и палестинским национализмом, на избирательность, неизбежную при"
         " резюмировании более чем 5000 - летней истории его населённости, часто накладывается идеологическая"
         " предвзятость или предшествующий опыт авторов.Еврейские периоды истории города важны для израильских"
         " националистов, дискурс которых предполагает, что современные евреи происходят от израэлитов и"
         " Маккавеев в то время как исламский, христианский и другие нееврейские периоды его истории важны"
         " для палестинского национализма, дискурс которого производит современных палестинцев от всех"
-        " разнообразных народов, населявших регион В результате каждая из сторон утверждает, что история"
+        " разнообразных народов, населявших регион. В результате каждая из сторон утверждает, что история"
         " города была политизирована оппонентами, дабы подкрепить притязания последних на город, и что это"
         " подтверждается разностью акцентов, придаваемых различными авторами разнообразным событиям и эрам в истории города.\n\n");
 
@@ -225,7 +416,7 @@ void print_2_section(FILE* tex)
     fprintf(tex, "\\section{Как древние греки считали производные}\n"
         "Для того, чтобы вычислять производную греки поступили очень умно :"
         " они построили машину времени, переместились в 2021 год н.э., затем"
-        " на крысичях украли мой \textbf{ exe } - шник и данную статью с подробнейшим"
+        " на крысичях украли мой \\textbf{exe}-шник и данную статью с подробнейшим"
         " описанием как искать ее в 2021 году, затем вернулись обратно и сковозь долгие"
         " годы они научились все - таки ее брать.Вы наверное подумаете, что это все чисто"
         " воды обман и выдумка, но у меня есть на то доказательства : \\newpage\n"
@@ -1149,14 +1340,20 @@ tree_element* tree::get_func()
     {
         switch (objs_->obj[cur_size_].value)
         {
-        case LN_VAL:
-        {
-            tmp_element = create_root(create_object(FUNCTION, objs_->obj[cur_size_++].value), get_bracket());
-            break;
-        }
-        default:
-            printf("Undefined type of function\ntype = %d\n", objs_->obj[cur_size_].value);
-            return nullptr;
+            case LN_VAL:
+            case SIN_VAL:
+            case COS_VAL:
+            case TG_VAL:
+            case CTG_VAL:
+            case SH_VAL:
+            case CH_VAL:
+            {
+                tmp_element = create_root(create_object(FUNCTION, objs_->obj[cur_size_++].value), get_bracket());
+                break;
+            }
+            default:
+                printf("Undefined type of function\ntype = %d\n", objs_->obj[cur_size_].value);
+                return nullptr;
         }
 
         

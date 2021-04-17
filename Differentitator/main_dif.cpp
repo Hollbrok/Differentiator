@@ -16,12 +16,18 @@ int main(int argc, int argv[])
 
 	//Objects* obj = objs->obj;
 
-	print_objects(objs);
+	//print_objects(objs);
 
 	tree dif_tree("main_differenciator");
 
 	dif_tree.fill_tree(objs, true);
-	
+
+	//char* formula = dif_tree.get_formula(dif_tree.get_root());
+	//delete[] formula;
+	//printf("elements = %d\n", hm_elements(dif_tree.get_root()) );
+
+
+
 	dif_tree.make_article();
 
 	printf("Successfull complete\n");

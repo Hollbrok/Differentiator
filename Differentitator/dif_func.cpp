@@ -41,74 +41,108 @@ struct Objects* fill_structures(FILE* text)
 	for (int i = 0; i < NUMBER_OF_VARIABLES; i++)
 		variables_names[i] = new char[MAX_NAME_SIZE] {0};
 
-	//printf("buffer = [%s]\n", buffer);
 
 	for (int i = 0; buffer[i] != '\0'; i++)
 	{
-		//printf("i = %d\nbuffer[%d] = [%c]\n\n", i, i, buffer[i]);
 		if (isspace(buffer[i]))
 			continue;
 		else if (buffer[i] == ')')
 		{
-			//printf("))))))))))))))))\n");
 			obj[obj_counter].type_of_object = BRACKET;
 			obj[obj_counter++].value = R_BRACKET_VAL;
 		}
 		else if (buffer[i] == '(')
 		{
-			//printf("((((((((((((((\n");
 			obj[obj_counter].type_of_object = BRACKET;
 			obj[obj_counter++].value = L_BRACKET_VAL;
 		}
 		else if (buffer[i] == '+')
 		{
-			//printf("++++++++++++\n");
-			//printf("here buffer[%d] = [%c]\n", i, buffer[i]);
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_PLUS_VAL;
 		}
 		else if (buffer[i] == '-')
 		{
-			//printf("--------\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_MIN_VAL;
 		}
 		else if (buffer[i] == '*')
 		{
-			printf("**********\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_TIMES_VAL;
 		}
 		else if (buffer[i] == '/')
 		{
-			//printf("/////////////\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_DEL_VAL;
 		}
 		else if (buffer[i] == '^')
 		{
-			//printf("^^^^^^^^^^^\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_POW_VAL;
 		}
 		else if (buffer[i] == '+')
 		{
-			//printf("in PLUUUUUUS\n");
 			obj[obj_counter].type_of_object = OPERATOR;
 			obj[obj_counter++].value = OP_PLUS_VAL;
 		}
 		else if (!strncmp(&buffer[i], "ln", 2))
 		{
-			printf("GOOD LN\n");
+			//printf("GOOD LN\n");
 			obj[obj_counter].type_of_object = FUNCTION;
 			obj[obj_counter++].value = LN_VAL;
 
 			i += 2 - 1;
 		}
+		else if (!strncmp(&buffer[i], "sin", 3))
+		{
+			obj[obj_counter].type_of_object = FUNCTION;
+			obj[obj_counter++].value = SIN_VAL;
+
+			i += 3 - 1;
+		}
+		else if (!strncmp(&buffer[i], "cos", 3))
+		{
+			//printf("GOOD LN\n");
+			obj[obj_counter].type_of_object = FUNCTION;
+			obj[obj_counter++].value = COS_VAL;
+
+			i += 3 - 1;
+		}
+		else if (!strncmp(&buffer[i], "tg", 2))
+		{
+			//printf("GOOD LN\n");
+			obj[obj_counter].type_of_object = FUNCTION;
+			obj[obj_counter++].value = TG_VAL;
+
+			i += 2 - 1;
+		}
+		else if (!strncmp(&buffer[i], "ctg", 3))
+		{
+			//printf("GOOD LN\n");
+			obj[obj_counter].type_of_object = FUNCTION;
+			obj[obj_counter++].value = CTG_VAL;
+
+			i += 3 - 1;
+		}
+		else if (!strncmp(&buffer[i], "sh", 2))
+		{
+			//printf("GOOD LN\n");
+			obj[obj_counter].type_of_object = FUNCTION;
+			obj[obj_counter++].value = SH_VAL;
+
+			i += 2 - 1;
+		}
+		else if (!strncmp(&buffer[i], "ch", 2))
+		{
+			//printf("GOOD LN\n");
+			obj[obj_counter].type_of_object = FUNCTION;
+			obj[obj_counter++].value = CH_VAL;
+
+			i += 2 - 1;
+		}
 		else if (isalpha(buffer[i]))
 		{
-
-			//printf("VARIABLE\n");
 			obj[obj_counter].type_of_object = VARIABLE;
 			
 			char name[MAX_NAME_SIZE] = {};
@@ -119,7 +153,6 @@ struct Objects* fill_structures(FILE* text)
 
 			i += j - 1;
 
-			//if (find_variable_name(name, variables_names) != -1)
 			obj[obj_counter].value = find_variable_name(name, variables_names);
 			
 			if (obj[obj_counter].value == -1)
@@ -128,12 +161,8 @@ struct Objects* fill_structures(FILE* text)
 				//strncmp(variables_names[obj[obj_counter].value], name, strlen(name));
 				for (int counter = 0; counter < strlen(name); counter++)
 					(variables_names[obj[obj_counter].value])[counter] = name[counter];
-				//printf("name = [%s]\n", name);
-				//printf("obj[obj_counter].value = %d\n", obj[obj_counter].value);
-				//printf("%%% variables_names[%d] = [%s]    %%%\n", obj[obj_counter].value, variables_names[obj[obj_counter].value]);
 			}
 			obj_counter++;
-			//obj[obj_counter++].value = 666;
 		}
 		else if (isdigit(buffer[i]))
 		{
