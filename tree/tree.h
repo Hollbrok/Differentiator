@@ -83,6 +83,8 @@ private:
 
 	tree_element* root_ = nullptr;
 
+	FILE* tex_ = nullptr;
+
 public:
 	struct Objects* objs_ = nullptr;
 

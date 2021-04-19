@@ -6,6 +6,15 @@ int FORMULA_COUNTER = 1;
 
 bool is_free_objs = false;
 
+#define IS_FUNCTION(root)                                       \
+    (root->get_data_type() == FUNCTION)
+
+#define IS_NUMBER(root)                                         \
+    (root->get_data_type() == NUMBER)
+
+#define IS_VARIABLE(root)                                       \
+    (root->get_data_type() == VARIABLE)
+
 #define L_AND_R_NULL(root)                                      \
     ( (root->get_left() == nullptr) && (root->get_right() == nullptr) )
 
@@ -65,6 +74,9 @@ bool is_free_objs = false;
 
 #define CR_ADD                                                  \
     create_object(OPERATOR, OP_PLUS_VAL)
+
+#define CR_DEL                                                  \
+    create_object(OPERATOR, OP_DEL_VAL)
     
 #define CR_NUMBER(value)                                        \
     create_root(create_object(NUMBER, value))
@@ -106,29 +118,11 @@ char* tree::get_formula(tree_element* start_root)
 
     char* buffer = new char[MAX_FORMULA_SIZE] {0};
 
-    //printf("\n");
     strcat(buffer, "\\begin{equation}\n");
     print_subtree(start_root, buffer);
 
-
-   // char* label_counter = new char[20]{0};
-    
-    //strcat(label_counter, "\\label{ ");
-   // label_counter[]
-
-    //_itoa(FORMULA_COUNTER, label_counter, 10);
-
-   // strcat(label_counter, "}\n");
-    //printf("[%s]\n", label_counter);
-    //strcat(buffer, label_counter);
     strcat(buffer, "\n\\end{equation} \n");
 
-    //delete[] label_counter;
-
-    //printf("[%s]\n", buffer);
-
-    //printf("\n");
-    //delete[] buffer;
     return buffer;
 }
 
@@ -141,21 +135,43 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
             switch (GET_VAL)
             {
 
-
                 case OP_TIMES_VAL:
                 {
-                    strcat(buffer, "\\large(");
-                    print_subtree(Lroot(start_root), buffer);
-                    strcat(buffer, "\\large) \\cdot \\large(");
-                    print_subtree(Rroot(start_root), buffer);
-                    strcat(buffer, "\\large)");
+                    if ( IS_FUNCTION(Lroot(start_root)) )
+                    {
+                        print_subtree(Lroot(start_root), buffer);
+                        strcat(buffer, "\\cdot ");
+                    }
+                    else if ( IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root)) )
+                    {
+                        print_subtree(Lroot(start_root), buffer);
+                        strcat(buffer, " \\cdot ");
+                    }
+                    else
+                    {
+                        strcat(buffer, "\\left(");
+                        print_subtree(Lroot(start_root), buffer);
+                        strcat(buffer, "\\right) \\cdot ");
+                    }
+
+                    if ( IS_FUNCTION(Rroot(start_root)) )
+                        print_subtree(Rroot(start_root), buffer);
+                    else if ( IS_NUMBER(Rroot(start_root)) || IS_VARIABLE(Rroot(start_root)) )
+                        print_subtree(Rroot(start_root), buffer);
+                    else
+                    {
+                        strcat(buffer, "\\left(");
+                        print_subtree(Rroot(start_root), buffer);
+                        strcat(buffer, "\\right)");
+                    }
+
                     break;
                 }
                 case OP_DEL_VAL:
                 {
                     strcat(buffer, "\\frac{");
                     print_subtree(Lroot(start_root), buffer);
-                    strcat(buffer, "}{");//strcat(buffer, "\\cdot");
+                    strcat(buffer, "}{");
                     print_subtree(Rroot(start_root), buffer);
                     strcat(buffer, "} ");
                     break;
@@ -203,9 +219,16 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
         {
             strcat(buffer, "\\");
             strcat(buffer, get_value_of_object(objs_, start_root->get_data()));
-            strcat(buffer, "(");
-            print_subtree(Lroot(start_root), buffer);
-            strcat(buffer, ") ");
+
+            if (IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root)))
+                print_subtree(Lroot(start_root), buffer);
+            else
+            {
+                strcat(buffer, "(");
+                print_subtree(Lroot(start_root), buffer);
+                strcat(buffer, ") ");
+ 
+            }
             break;
         }
         default:
@@ -221,6 +244,8 @@ void tree::make_article()
 
     FILE* tex = fopen("main.tex", "wb");
     assert(tex && "Can't open main.tex file");
+
+    tex_ = tex;
 
     print_title(tex);
     print_1_section(tex);
@@ -263,9 +288,6 @@ void tree::main_print(FILE* tex)
     fprintf(tex, "\n");
 
 
-    fprintf(tex, "Чтобы греки сильно уж не зазнались я решил пропустить все шаги вычисления"
-        ", иначе бы греки быстро развились и возможно я не родился, а мне нравится жить).\n\n Встречайте результат:\n");
-
     tree_element* new_tree_root = differenciate(get_root());
 
     tree* new_tree = new tree;
@@ -274,6 +296,10 @@ void tree::main_print(FILE* tex)
     new_tree->objs_ = objs_;
 
     new_tree->show_tree();
+
+
+    fprintf(tex, "Чтобы греки сильно уж не зазнались я решил пропустить все шаги вычисления"
+        ", иначе бы греки быстро развились и возможно я не родился, а мне нравится жить).\n\n Встречайте результат:\n");
 
     char* formula2 = get_formula(new_tree->get_root());
 
@@ -499,12 +525,62 @@ tree_element* tree::differenciate(tree_element* start_root)
             {
                 case OP_MIN_VAL:
                 case OP_PLUS_VAL:
-                    return ADD_OR_SUB(create_object(OPERATOR, GET_VAL), dL, dR);
-                
-                case OP_TIMES_VAL:
-                    return ADDITION(MULTIPLY(dL, copyR), MULTIPLY(dR, copyL));
+                {
+                    fprintf(tex_, "Как в детстве нас учили ходить, так и сейчас мы возьмем следующую производную:\n");
+                    fprintf(tex_, get_formula(start_root));
 
-                case OP_POW_VAL: // NOW ITS GENERAL. Am I need add not only general method but differ cases to 2^x, x^2, x^f(x) ...
+                    fprintf(tex_, "Даже Рома Глаз знает, что производная от суммы или разности равна соответственно сумме/разности"
+                                  " производных ее частей\\\\");
+
+                    fprintf(tex_, "Поэтому посчитаем производную слева: \n");
+                    fprintf(tex_, get_formula(Lroot(start_root)));
+
+                    tree_element* left_dif = dL;
+                    fprintf(tex_, "Её производная с точностью до распределение Ферми-Дирака получается равной:\n");
+                    fprintf(tex_, get_formula(left_dif));
+
+                    fprintf(tex_, "А после, если останутся силы, производную правой части, которая равна: \n");
+                    fprintf(tex_, get_formula(Rroot(start_root)));
+
+                    tree_element* right_dif = dR;
+                    fprintf(tex_, "На лекции по русской литературу я узнал об законе больших чисел Бернулли-Горяйнова,"
+                                  " из которого следует следующее выражение для производной:\n");
+                    fprintf(tex_, get_formula(right_dif));
+
+                    return ADD_OR_SUB(create_object(OPERATOR, GET_VAL), left_dif, right_dif);
+                }
+                case OP_TIMES_VAL:
+                {
+                    fprintf(tex_, "Чтобы попа не потела, не кусали комары, полторашка научит вас брать диффуры."
+                                  " Шучу! Мы возьмем следующую производную:\n");
+                    fprintf(tex_, get_formula(start_root));
+
+                    fprintf(tex_, "На научной конференции 982 года по квантовой термодинамике Пушкин доказал, что мы живем в "
+                                  "3.14-мерном пространстве и оно кошка-симметрично,"
+                                  " отсюда как раз-таки следует, что производная от произведения это:\n\n"
+                                  "  \\begin{equation}\n" 
+                                  "  f(x) \\cdot g(x) = f^{'}(x) \\cdot g(x) + f(x) \\cdot g^{'}(x)\n"
+                                  " \\end{equation} \\\\");
+
+                    fprintf(tex_, "Поэтому по методу Центрирования галактик рассчитаем производную f(x), которое равна: \n");
+                    fprintf(tex_, get_formula(Lroot(start_root)));
+
+                    tree_element* left_dif = dL;
+                    fprintf(tex_, " P.S. тут полторашка словила шизу и начала бегать по комнате, поэтому за правильность "
+                                  "результата она не ручается."
+                                  " С погрешностью в 0.1 почку вискаса получаем:\n");
+                    fprintf(tex_, get_formula(left_dif));
+
+                    fprintf(tex_, "Ну так как Mrs.Patrikovna сейчас бегает за своим хвостом, то следующую производную: \n");
+                    fprintf(tex_, get_formula(Rroot(start_root)));
+
+                    tree_element* right_dif = dR;
+                    fprintf(tex_, "Я попробую взять сам, в этом мне поможет баночка охоты крепкого:\n");
+                    fprintf(tex_, get_formula(right_dif));
+
+                    return ADDITION(MULTIPLY(left_dif, copyR), MULTIPLY(right_dif, copyL));
+                }
+                case OP_POW_VAL:
                     return EXPONENTIATION(differenciate(create_root(CR_MUL, copyR, create_root(CR_LN, copyL))), copyF);
                 
                 default:
@@ -513,6 +589,7 @@ tree_element* tree::differenciate(tree_element* start_root)
             break;
         }
         case NUMBER:
+            //fprintf(tex_, "Ссылаясь на 2 том Кудрявцева, производная от константы = 0:");
             return CR_NUMBER(0);
 
         case VARIABLE:
@@ -522,7 +599,8 @@ tree_element* tree::differenciate(tree_element* start_root)
             switch (GET_VAL)
             {
                 case LN_VAL:
-                    return create_root(create_object(OPERATOR, OP_DEL_VAL), differenciate( copy_subtree(start_root->get_left()) ), copy_subtree(start_root->get_left())   );
+                    fprintf(tex_, "Опираясь на Кудрявцева, том 1, страница 112, пример 11 можно получить производную логарифма.\n\n");
+                    return create_root(CR_DEL, differenciate( copy_subtree(start_root->get_left()) ), copy_subtree(start_root->get_left()));
 
                 default:
                     PRINT_UNDEFINE_FUNC;
