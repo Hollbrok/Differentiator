@@ -382,9 +382,7 @@ void tree::optimizer_operator(tree_element* start_root)
                 {
                     if (start_root->get_left()->get_data_value() == 0) // то есть выражние допустим x +- 0 ==>> x 
                     {
-                        //delete_subtree(start_root->get_left());
                         tree_element* copy_right = copy_subtree(start_root->get_right());
-                        //delete_subtree(start_root->get_right());
 
                         if (start_root->get_prev() != nullptr)
                         {
@@ -407,14 +405,17 @@ void tree::optimizer_operator(tree_element* start_root)
                             delete_subtree(start_root);
                         }
                     }
+                    else
+                    {
+                        //optimizer_operator(Lroot(start_root));
+                        optimizer_operator(Rroot(start_root));
+                    }
                 }
                 else if (start_root->get_right()->get_data_type() == NUMBER)
                 {
                     if (start_root->get_right()->get_data_value() == 0) // то есть выражние допустим x +- 0 ==>> x 
                     {
-                        //delete_subtree(start_root->get_left());
                         tree_element* copy_left = copy_subtree(start_root->get_left());
-                        //delete_subtree(start_root->get_right());
 
                         if (start_root->get_prev() != nullptr)
                         {
@@ -436,6 +437,11 @@ void tree::optimizer_operator(tree_element* start_root)
                             set_root(copy_left);//root_ = copy_left;
                             delete_subtree(start_root);
                         }
+                    }
+                    else
+                    {
+                        //optimizer_operator(Lroot(start_root));
+                        optimizer_operator(Rroot(start_root));
                     }
                 }
                 else
@@ -473,6 +479,11 @@ void tree::optimizer_operator(tree_element* start_root)
                             delete_subtree(start_root);
                         }
                     }
+                    else
+                    {
+                        //optimizer_operator(Lroot(start_root));
+                        optimizer_operator(Rroot(start_root));
+                    }
                 }
                 else if (start_root->get_right()->get_data_type() == NUMBER)
                 {
@@ -498,6 +509,11 @@ void tree::optimizer_operator(tree_element* start_root)
                             set_root(copyL);//root_ = copyL;
                             delete_subtree(start_root);
                         }
+                    }
+                    else
+                    {
+                        //optimizer_operator(Lroot(start_root));
+                        optimizer_operator(Rroot(start_root));
                     }
                 }
                 else
@@ -543,6 +559,7 @@ void tree::optimizer_operator(tree_element* start_root)
                             if (start_root->get_prev() != nullptr)
                             {
                                 tree_element* prev = start_root->get_prev();
+
                                 if (prev->get_left() == start_root)
                                 {
                                     prev->add_to_left(CR_NUMBER(0));
@@ -560,6 +577,11 @@ void tree::optimizer_operator(tree_element* start_root)
                                 set_root(CR_NUMBER(0));// root_ = CR_NUMBER(0);
                                 delete_subtree(start_root);
                             }
+                        }
+                        else
+                        {
+                            //optimizer_operator(Lroot(start_root));
+                            optimizer_operator(Rroot(start_root));
                         }
                     }
                     else if (start_root->get_right()->get_data_type() == NUMBER) // f(x) * 1 ==>> f(x)
@@ -609,6 +631,11 @@ void tree::optimizer_operator(tree_element* start_root)
                                 set_root(CR_NUMBER(0));// root_ = CR_NUMBER(0);
                                 delete_subtree(start_root);
                             }
+                        }
+                        else
+                        {
+                            optimizer_operator(Lroot(start_root));
+                            //optimizer_operator(Rroot(start_root));
                         }
                     }
                 }
@@ -775,9 +802,9 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
             strcat(buffer, "\\");
             strcat(buffer, get_value_of_object(objs_, start_root->get_data()));
 
-            if (IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root)))
-                print_subtree(Lroot(start_root), buffer);
-            else
+            //if (IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root)))
+              //  print_subtree(Lroot(start_root), buffer);
+            if(true)//else
             {
                 strcat(buffer, "(");
                 print_subtree(Lroot(start_root), buffer);
@@ -819,10 +846,22 @@ void tree::make_article(const char* name_of_file)
     system("iconv.exe -t UTF-8 -f CP1251 < main.tex > temp_main.tex");
     system("del main.tex");
     system("ren temp_main.tex main.tex");
-    system("pdflatex main.tex");
 
-    char* sys1 = new char[60]{0};
+    for (int i = 0; i < 2; i++)
+    {
+        system("pdflatex main.tex");
+    }
+     
+    char* delete_old_file = new char[50]{ 0 };
+    strcat(delete_old_file, "del ");
+    strcat(delete_old_file, name_of_file);
+    system(delete_old_file);
+    delete[] delete_old_file;
 
+    
+    char* sys1 = new char[60]{ 0 };
+
+    
     strcat(sys1, "ren main.pdf ");
     strcat(sys1, name_of_file);
     system(sys1);
@@ -831,10 +870,12 @@ void tree::make_article(const char* name_of_file)
     strcat(sys2, "start ");
     strcat(sys2, name_of_file);
     system(sys2);
-    //system("start main.pdf");
-    
+
     delete[] sys1;
     delete[] sys2;
+    
+
+
 
     return;
 
@@ -877,17 +918,16 @@ void tree::main_print(FILE* tex)
 
     fprintf(tex, "Но данное выражение какое-то некрасивое, поэтому давайте его преобразуем к следующему виду:\n");
 
-    printf("root = %p\n", new_tree->get_root());
     new_tree->optimizer_number(new_tree->get_root());
-    printf("root = %p\n", new_tree->get_root());
-
     new_tree->show_tree("lvl_1_of_optimization");
 
 
     new_tree->optimizer_operator(new_tree->get_root());
     new_tree->show_tree("lvl_2_of_optimization");
     
+
     new_tree->optimizer_operator(new_tree->get_root());
+    new_tree->optimizer_number(new_tree->get_root());
     new_tree->show_tree("lvl_3_of_optimization");
 
 
