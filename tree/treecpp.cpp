@@ -283,7 +283,7 @@ void tree::optimizer_number(tree_element* start_root)
                         else
                         {
                             delete_subtree(start_root);
-                            root_ = CR_NUMBER(result);
+                            set_root(CR_NUMBER(result));
                         }
 
                     }
@@ -403,7 +403,7 @@ void tree::optimizer_operator(tree_element* start_root)
                         }
                         else
                         {
-                            root_ = copy_right;
+                            set_root(copy_right);//root_ = copy_right;
                             delete_subtree(start_root);
                         }
                     }
@@ -433,7 +433,7 @@ void tree::optimizer_operator(tree_element* start_root)
                         }
                         else
                         {
-                            root_ = copy_left;
+                            set_root(copy_left);//root_ = copy_left;
                             delete_subtree(start_root);
                         }
                     }
@@ -469,7 +469,7 @@ void tree::optimizer_operator(tree_element* start_root)
                         }
                         else
                         {
-                            root_ = CR_NUMBER(0);
+                            set_root(CR_NUMBER(0));//root_ = CR_NUMBER(0);
                             delete_subtree(start_root);
                         }
                     }
@@ -495,7 +495,7 @@ void tree::optimizer_operator(tree_element* start_root)
                         }
                         else
                         {
-                            root_ = copyL;
+                            set_root(copyL);//root_ = copyL;
                             delete_subtree(start_root);
                         }
                     }
@@ -534,7 +534,7 @@ void tree::optimizer_operator(tree_element* start_root)
                             }
                             else
                             {
-                                root_ = copyR;
+                                set_root(copyR);//root_ = copyR;
                                 delete_subtree(start_root);
                             }
                         }
@@ -557,7 +557,7 @@ void tree::optimizer_operator(tree_element* start_root)
                             }
                             else
                             {
-                                root_ = CR_NUMBER(0);
+                                set_root(CR_NUMBER(0));// root_ = CR_NUMBER(0);
                                 delete_subtree(start_root);
                             }
                         }
@@ -583,7 +583,7 @@ void tree::optimizer_operator(tree_element* start_root)
                             }
                             else
                             {
-                                root_ = copyL;
+                                set_root(copyL);//root_ = copyL;
                                 delete_subtree(start_root);
                             }
                         }
@@ -606,7 +606,7 @@ void tree::optimizer_operator(tree_element* start_root)
                             }
                             else
                             {
-                                root_ = CR_NUMBER(0);
+                                set_root(CR_NUMBER(0));// root_ = CR_NUMBER(0);
                                 delete_subtree(start_root);
                             }
                         }
@@ -869,7 +869,7 @@ void tree::main_print(FILE* tex)
     fprintf(tex, "После двух бессонных ночей, шести пачек вискаса и бутылки охоты крепкого"
         " Мы получили примерно следующее:\n");
 
-    char* formula2 = get_formula(new_tree->get_root());
+    char* formula2 = new_tree->get_formula(new_tree->get_root());
 
     fprintf(tex, formula2);
     delete[] formula2;
@@ -877,18 +877,21 @@ void tree::main_print(FILE* tex)
 
     fprintf(tex, "Но данное выражение какое-то некрасивое, поэтому давайте его преобразуем к следующему виду:\n");
 
-    optimizer_number(new_tree->get_root());
+    printf("root = %p\n", new_tree->get_root());
+    new_tree->optimizer_number(new_tree->get_root());
+    printf("root = %p\n", new_tree->get_root());
+
     new_tree->show_tree("lvl_1_of_optimization");
 
 
-    optimizer_operator(new_tree->get_root());
+    new_tree->optimizer_operator(new_tree->get_root());
     new_tree->show_tree("lvl_2_of_optimization");
     
-    optimizer_operator(new_tree->get_root());
+    new_tree->optimizer_operator(new_tree->get_root());
     new_tree->show_tree("lvl_3_of_optimization");
 
 
-    char* formula3 = get_formula(new_tree->get_root());
+    char* formula3 = new_tree->get_formula(new_tree->get_root());
 
     fprintf(tex, formula3);
     delete[] formula3;
