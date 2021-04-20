@@ -15,6 +15,15 @@ bool is_free_objs = false;
 #define IS_VARIABLE(root)                                       \
     (root->get_data_type() == VARIABLE)
 
+#define IS_POW(root)                                            \
+    (Lroot(root)->get_data_type() == OPERATOR) && (Lroot(root)->get_data_value() == OP_POW_VAL)
+
+#define IS_MUL(root)                                            \
+    (Lroot(root)->get_data_type() == OPERATOR) && (Lroot(root)->get_data_value() == OP_TIMES_VAL)
+
+#define IS_DEL(root)                                            \
+    (Lroot(root)->get_data_type() == OPERATOR) && (Lroot(root)->get_data_value() == OP_DEL_VAL)
+
 #define L_AND_R_NULL(root)                                      \
     ( (root->get_left() == nullptr) && (root->get_right() == nullptr) )
 
@@ -87,6 +96,7 @@ bool is_free_objs = false;
 #define GET_TYPE                                                \
     start_root->get_data_type()
 
+
 int hm_elements(tree_element* root)
 {
     int hm = 0;
@@ -112,6 +122,541 @@ int hm_elements(tree_element* root)
     return hm;
 }
 
+bool tree_element::check_numbers(tree_element* start_root)
+{
+    if (GET_TYPE == VARIABLE)
+        return false;
+    if (GET_TYPE == NUMBER)
+        return true;
+    if (GET_TYPE == FUNCTION)
+        return false;//return check_numbers(Lroot(start_root));
+
+    if (Lroot(start_root))
+    {
+        if (check_numbers(Lroot(start_root)))
+        {
+            if (Rroot(start_root))
+                return check_numbers(Rroot(start_root));
+            else
+                return false;
+        }
+        else
+            return false;
+    }
+    else if (Rroot(start_root))
+    {
+        if (check_numbers(Rroot(start_root)))
+        {
+            if (Lroot(start_root))
+                return check_numbers(Lroot(start_root));
+            else 
+                return false;
+        }
+        else
+            return false;
+    }
+    else
+        return false;
+
+    
+}
+
+int tree::calculate(tree_element* start_root)
+{
+
+    int result = get_number(start_root);
+
+    return result;
+}
+
+int tree::get_number(tree_element* start_root)
+{
+    switch (GET_TYPE)
+    {
+        case OPERATOR:
+        {
+            switch (GET_VAL)
+            {
+                case OP_PLUS_VAL: 
+                    return get_number(Lroot(start_root)) + get_number(Rroot(start_root));
+                case OP_MIN_VAL:
+                    return get_number(Lroot(start_root)) - get_number(Rroot(start_root));
+                case OP_TIMES_VAL:
+                    return get_number(Lroot(start_root)) * get_number(Rroot(start_root));
+                case OP_DEL_VAL:
+                    return get_number(Lroot(start_root)) / get_number(Rroot(start_root));
+                case OP_POW_VAL:
+                    return pow(get_number(Lroot(start_root)), get_number(Rroot(start_root)));
+                default:
+                    PRINT_UNDEFINE_OP_VALUE;
+            }
+            break;
+        }
+        case NUMBER:
+            return GET_VAL;
+        default:
+            PRINT_UNDEFINE_TYPE;
+    }
+}
+
+void tree::optimizer_number(tree_element* start_root)
+{
+    switch (GET_TYPE)
+    {
+        case NUMBER:
+            return;
+        case VARIABLE:
+            return;
+        case FUNCTION:
+        {
+            if (check_numbers(Lroot(start_root)))
+            {
+                printf("У функции все аргументы -- это числа\n");
+                int result = calculate(Lroot(start_root));
+                
+                delete_subtree(Lroot(start_root));
+                start_root->set_left(CR_NUMBER(result));
+            }
+            else
+                optimizer_number(Lroot(start_root));  // Вместо return нужно вызывать optimizer(Lroot(start_root));
+            break;
+        }
+        case OPERATOR:
+        {
+            switch (GET_VAL)
+            {
+                case OP_MIN_VAL:
+                case OP_PLUS_VAL:
+                case OP_DEL_VAL:
+                case OP_TIMES_VAL:
+                case OP_POW_VAL:
+                    if (check_numbers((start_root)))
+                    {
+                        printf("У %s все аргументы -- это числа\n", get_value_of_object(objs_, start_root->get_data()));
+                        int result = calculate(start_root);
+
+                        if (start_root->get_prev() != nullptr)
+                        {
+                            tree_element* prev = start_root->get_prev();
+
+                            if (prev->get_left() == start_root)
+                            {
+                                delete_subtree(start_root);
+                                prev->set_left(CR_NUMBER(result));
+                            }
+                            else if (prev->get_right() == start_root)
+                            {
+                                delete_subtree(start_root);
+                                prev->set_right(CR_NUMBER(result));
+                            }
+                            else printf("Error in line: %d\n", __LINE__);
+
+                        }
+                        else
+                        {
+                            delete_subtree(start_root);
+                            root_ = CR_NUMBER(result);
+                        }
+
+                    }
+                    else
+                    {
+                        optimizer_number(Lroot(start_root));              // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                        optimizer_number(Rroot(start_root));
+                    }                                               // и create_root(..) подсоединить к prev start_root, если есть, или сделать root_, если нету;
+                    break;
+                /*case OP_MIN_VAL:
+                    if (check_numbers((start_root)))
+                        printf("У - все аргументы -- это числа\n");
+                    else
+                    {
+                        optimizer(Lroot(start_root));              // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                        optimizer(Rroot(start_root));
+                    }   // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                                 // и create_root(..) подсоединить к prev start_root, если есть, или сделать root_, если нету;
+                    break;
+                case OP_TIMES_VAL:
+                    if (check_numbers((start_root)))
+                        printf("У * все аргументы -- это числа\n");
+                    else
+                    {
+                        optimizer(Lroot(start_root));              // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                        optimizer(Rroot(start_root));
+                    }   // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                                 // и create_root(..) подсоединить к prev start_root, если есть, или сделать root_, если нету;
+                    break;
+                case OP_DEL_VAL:
+                    if (check_numbers((start_root)))
+                        printf("У / все аргументы -- это числа\n");
+                    else
+                    {
+                        optimizer(Lroot(start_root));              // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                        optimizer(Rroot(start_root));
+                    }   // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                                 // и create_root(..) подсоединить к prev start_root, если есть, или сделать root_, если нету;
+                    break;
+                case OP_POW_VAL:
+                    if (check_numbers((start_root)))
+                        printf("У ^ все аргументы -- это числа\n");
+                    else
+                    {
+                        optimizer(Lroot(start_root));              // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                        optimizer(Rroot(start_root));
+                    }   // Вместо return нужно вызывать calculator от start_root, потом delete_subtree,
+                                 // и create_root(..) подсоединить к prev start_root, если есть, или сделать root_, если нету;
+                    break;*/
+                default:
+                    PRINT_UNDEFINE_OP_VALUE;
+                    break;
+            }
+            break;
+
+        }
+        default:
+            PRINT_UNDEFINE_TYPE;
+            break;
+    }
+
+    return;
+}
+
+void tree::optimizer_operator(tree_element* start_root)
+{
+    switch (GET_TYPE)
+    {
+    case NUMBER:
+        return;
+    case VARIABLE:
+        return;
+    case FUNCTION:
+    {
+        /*if (check_numbers(Lroot(start_root)))
+        {
+            printf("У функции все аргументы -- это числа\n");
+            int result = calculate(Lroot(start_root));
+
+            delete_subtree(Lroot(start_root));
+            start_root->set_left(CR_NUMBER(result));
+        }
+        else
+            optimizer_number(Lroot(start_root));  // Вместо return нужно вызывать optimizer(Lroot(start_root));
+        */
+        break;
+    }
+    case OPERATOR:
+    {
+        switch (GET_VAL)
+        {
+            case OP_MIN_VAL:
+            case OP_PLUS_VAL:
+            {
+                if (start_root->get_left()->get_data_type() == NUMBER)
+                {
+                    if (start_root->get_left()->get_data_value() == 0) // то есть выражние допустим x +- 0 ==>> x 
+                    {
+                        //delete_subtree(start_root->get_left());
+                        tree_element* copy_right = copy_subtree(start_root->get_right());
+                        //delete_subtree(start_root->get_right());
+
+                        if (start_root->get_prev() != nullptr)
+                        {
+                            tree_element* prev = start_root->get_prev();
+                            if (prev->get_left() == start_root)
+                            {
+                                prev->add_to_left(copy_right);
+                                delete_subtree(start_root);
+                            }
+                            else if (prev->get_right() == start_root)
+                            {
+                                prev->add_to_right(copy_right);
+                                delete_subtree(start_root);
+                            }
+                            else printf("Error in line: %d\n", __LINE__);
+                        }
+                        else
+                        {
+                            root_ = copy_right;
+                            delete_subtree(start_root);
+                        }
+                    }
+                }
+                else if (start_root->get_right()->get_data_type() == NUMBER)
+                {
+                    if (start_root->get_right()->get_data_value() == 0) // то есть выражние допустим x +- 0 ==>> x 
+                    {
+                        //delete_subtree(start_root->get_left());
+                        tree_element* copy_left = copy_subtree(start_root->get_left());
+                        //delete_subtree(start_root->get_right());
+
+                        if (start_root->get_prev() != nullptr)
+                        {
+                            tree_element* prev = start_root->get_prev();
+                            if (prev->get_left() == start_root)
+                            {
+                                prev->add_to_left(copy_left);
+                                delete_subtree(start_root);
+                            }
+                            else if (prev->get_right() == start_root)
+                            {
+                                prev->add_to_right(copy_left);
+                                delete_subtree(start_root);
+                            }
+                            else printf("Error in line: %d\n", __LINE__);
+                        }
+                        else
+                        {
+                            root_ = copy_left;
+                            delete_subtree(start_root);
+                        }
+                    }
+                }
+                else
+                {
+                    optimizer_operator(Lroot(start_root));
+                    optimizer_operator(Rroot(start_root));
+                }
+
+                break;
+            }
+            case OP_DEL_VAL:
+            {
+                if (start_root->get_left()->get_data_type() == NUMBER)
+                {
+                    if (start_root->get_left()->get_data_value() == 0) // то есть выражние допустим 0 / f(x) ==>> 0 
+                    {
+                        if (start_root->get_prev() != nullptr)
+                        {
+                            tree_element* prev = start_root->get_prev();
+                            if (prev->get_left() == start_root)
+                            {
+                                prev->add_to_left(CR_NUMBER(0));
+                                delete_subtree(start_root);
+                            }
+                            else if (prev->get_right() == start_root)
+                            {
+                                prev->add_to_right(CR_NUMBER(0));
+                                delete_subtree(start_root);
+                            }
+                            else printf("Error in line: %d\n", __LINE__);
+                        }
+                        else
+                        {
+                            root_ = CR_NUMBER(0);
+                            delete_subtree(start_root);
+                        }
+                    }
+                }
+                else if (start_root->get_right()->get_data_type() == NUMBER)
+                {
+                    if (start_root->get_right()->get_data_value() == 1) // то есть выражние допустим f(x) / 1 ==>> f(x)
+                    {
+                        if (start_root->get_prev() != nullptr)
+                        {
+                            tree_element* prev = start_root->get_prev();
+                            if (prev->get_left() == start_root)
+                            {
+                                prev->add_to_left(copyL);
+                                delete_subtree(start_root);
+                            }
+                            else if (prev->get_right() == start_root)
+                            {
+                                prev->add_to_right(copyL);
+                                delete_subtree(start_root);
+                            }
+                            else printf("Error in line: %d\n", __LINE__);
+                        }
+                        else
+                        {
+                            root_ = copyL;
+                            delete_subtree(start_root);
+                        }
+                    }
+                }
+                else
+                {
+                    optimizer_operator(Lroot(start_root));
+                    optimizer_operator(Rroot(start_root));
+                }
+
+                break;
+            }
+            case OP_TIMES_VAL:
+            {
+                if ( (start_root->get_left()->get_data_type() == NUMBER) || (start_root->get_right()->get_data_type() == NUMBER))
+                {
+                    if (start_root->get_left()->get_data_type() == NUMBER) // 1 * f(x) ==>> f(x)
+                    {
+
+                        if (start_root->get_left()->get_data_value() == 1)
+                        {
+                            if (start_root->get_prev() != nullptr)
+                            {
+                                tree_element* prev = start_root->get_prev();
+                                if (prev->get_left() == start_root)
+                                {
+                                    prev->add_to_left(copyR);
+                                    delete_subtree(start_root);
+                                }
+                                else if (prev->get_right() == start_root)
+                                {
+                                    prev->add_to_right(copyR);
+                                    delete_subtree(start_root);
+                                }
+                                else printf("Error in line: %d\n", __LINE__);
+                            }
+                            else
+                            {
+                                root_ = copyR;
+                                delete_subtree(start_root);
+                            }
+                        }
+                        else if (start_root->get_left()->get_data_value() == 0)
+                        {
+                            if (start_root->get_prev() != nullptr)
+                            {
+                                tree_element* prev = start_root->get_prev();
+                                if (prev->get_left() == start_root)
+                                {
+                                    prev->add_to_left(CR_NUMBER(0));
+                                    delete_subtree(start_root);
+                                }
+                                else if (prev->get_right() == start_root)
+                                {
+                                    prev->add_to_right(CR_NUMBER(0));
+                                    delete_subtree(start_root);
+                                }
+                                else printf("Error in line: %d\n", __LINE__);
+                            }
+                            else
+                            {
+                                root_ = CR_NUMBER(0);
+                                delete_subtree(start_root);
+                            }
+                        }
+                    }
+                    else if (start_root->get_right()->get_data_type() == NUMBER) // f(x) * 1 ==>> f(x)
+                    {
+                        if (start_root->get_right()->get_data_value() == 1)
+                        {
+                            if (start_root->get_prev() != nullptr)
+                            {
+                                tree_element* prev = start_root->get_prev();
+                                if (prev->get_left() == start_root)
+                                {
+                                    prev->add_to_left(copyL);
+                                    delete_subtree(start_root);
+                                }
+                                else if (prev->get_right() == start_root)
+                                {
+                                    prev->add_to_right(copyL);
+                                    delete_subtree(start_root);
+                                }
+                                else printf("Error in line: %d\n", __LINE__);
+                            }
+                            else
+                            {
+                                root_ = copyL;
+                                delete_subtree(start_root);
+                            }
+                        }
+                        else if (start_root->get_right()->get_data_value() == 0)
+                        {
+                            if (start_root->get_prev() != nullptr)
+                            {
+                                tree_element* prev = start_root->get_prev();
+                                if (prev->get_left() == start_root)
+                                {
+                                    prev->add_to_left(CR_NUMBER(0));
+                                    delete_subtree(start_root);
+                                }
+                                else if (prev->get_right() == start_root)
+                                {
+                                    prev->add_to_right(CR_NUMBER(0));
+                                    delete_subtree(start_root);
+                                }
+                                else printf("Error in line: %d\n", __LINE__);
+                            }
+                            else
+                            {
+                                root_ = CR_NUMBER(0);
+                                delete_subtree(start_root);
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    optimizer_operator(Lroot(start_root));
+                    optimizer_operator(Rroot(start_root));
+                }
+
+                break;
+            }
+            case OP_POW_VAL:
+                /*if (check_numbers((start_root)))
+                {
+                    printf("У %s все аргументы -- это числа\n", get_value_of_object(objs_, start_root->get_data()));
+                    int result = calculate(start_root);
+
+                    if (start_root->get_prev() != nullptr)
+                    {
+                        tree_element* prev = start_root->get_prev();
+
+                        if (prev->get_left() == start_root)
+                        {
+                            delete_subtree(start_root);
+                            prev->set_left(CR_NUMBER(result));
+                        }
+                        else if (prev->get_right() == start_root)
+                        {
+                            delete_subtree(start_root);
+                            prev->set_right(CR_NUMBER(result));
+                        }
+                        else printf("Error in line: %d\n", __LINE__);
+
+                    }
+                    else
+                    {
+                        delete_subtree(start_root);
+                        root_ = CR_NUMBER(result);
+                    }
+
+                }
+                else
+                {
+                    optimizer_number(Lroot(start_root));  
+                    optimizer_number(Rroot(start_root));
+                }    */                                           
+                break;
+            default:
+                PRINT_UNDEFINE_OP_VALUE;
+                break;
+        }
+        break;
+
+    }
+    default:
+        PRINT_UNDEFINE_TYPE;
+        break;
+    }
+
+    return;
+}
+
+void tree_element::delete_subtree(tree_element* start_root)
+{
+    if (Lroot(start_root))
+        delete_subtree(Lroot(start_root));
+
+    if (Rroot(start_root))
+        delete_subtree(Rroot(start_root));
+
+    delete start_root;
+    start_root = nullptr;
+
+    return;
+}
+
 char* tree::get_formula(tree_element* start_root)
 {
     printf("elements = %d\n", hm_elements(start_root));
@@ -134,15 +679,10 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
         {
             switch (GET_VAL)
             {
-
                 case OP_TIMES_VAL:
                 {
-                    if ( IS_FUNCTION(Lroot(start_root)) )
-                    {
-                        print_subtree(Lroot(start_root), buffer);
-                        strcat(buffer, "\\cdot ");
-                    }
-                    else if ( IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root)) )
+                    if ( IS_FUNCTION(Lroot(start_root))  || (IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root))) || 
+                        (IS_POW(start_root)) || (IS_MUL(start_root)) || (IS_DEL(start_root)) )
                     {
                         print_subtree(Lroot(start_root), buffer);
                         strcat(buffer, " \\cdot ");
@@ -153,10 +693,16 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
                         print_subtree(Lroot(start_root), buffer);
                         strcat(buffer, "\\right) \\cdot ");
                     }
-
+                                // На 1 if заменить
                     if ( IS_FUNCTION(Rroot(start_root)) )
                         print_subtree(Rroot(start_root), buffer);
                     else if ( IS_NUMBER(Rroot(start_root)) || IS_VARIABLE(Rroot(start_root)) )
+                        print_subtree(Rroot(start_root), buffer);
+                    else if ((Rroot(start_root)->get_data_type() == OPERATOR) && (Rroot(start_root)->get_data_value() == OP_POW_VAL))
+                        print_subtree(Rroot(start_root), buffer);
+                    else if ((Rroot(start_root)->get_data_type() == OPERATOR) && (Rroot(start_root)->get_data_value() == OP_TIMES_VAL))
+                        print_subtree(Rroot(start_root), buffer);
+                    else if ((Rroot(start_root)->get_data_type() == OPERATOR) && (Rroot(start_root)->get_data_value() == OP_DEL_VAL))
                         print_subtree(Rroot(start_root), buffer);
                     else
                     {
@@ -298,14 +844,32 @@ void tree::main_print(FILE* tex)
     new_tree->show_tree();
 
 
-    fprintf(tex, "Чтобы греки сильно уж не зазнались я решил пропустить все шаги вычисления"
-        ", иначе бы греки быстро развились и возможно я не родился, а мне нравится жить).\n\n Встречайте результат:\n");
+    fprintf(tex, "После двух бессонных ночей, шести пачек вискаса и бутылки охоты крепкого"
+        " Мы получили примерно следующее:\n");
 
     char* formula2 = get_formula(new_tree->get_root());
 
     fprintf(tex, formula2);
     delete[] formula2;
 
+
+    fprintf(tex, "Но данное выражение какое-то некрасивое, поэтому давайте его преобразуем к следующему виду:\n");
+
+    optimizer_number(new_tree->get_root());
+    new_tree->show_tree();
+
+
+    optimizer_operator(new_tree->get_root());
+    new_tree->show_tree();
+    
+    optimizer_operator(new_tree->get_root());
+    new_tree->show_tree();
+
+
+    char* formula3 = get_formula(new_tree->get_root());
+
+    fprintf(tex, formula3);
+    delete[] formula3;
 
     return;
 }
@@ -647,33 +1211,25 @@ tree_element* tree_element::copy_subtree(tree_element* start_element)
 tree_element* tree_element::add_to_left(tree_element* new_element)
 {
     assert(this && "You passed nullptr tree");
+    assert(new_element && "Can't calloc memory for tree_element");
 
-    tree_element* tmp = new tree_element;
-    assert(tmp && "Can't calloc memory for tree_element");
+    new_element->set_prev(this);
 
-    tmp->set_prev(this);
-    tmp->set_right(nullptr);
-    tmp->set_left(nullptr);
+    this->set_left(new_element);
 
-    this->set_left(tmp);
-
-    return tmp;
+    return new_element;
 }
 
 tree_element* tree_element::add_to_right(tree_element* new_element)
 {
     assert(this && "You passed nullptr tree");
+    assert(new_element && "Can't calloc memory for tree_element");
 
-    tree_element* tmp = new tree_element;
-    assert(tmp && "Can't calloc memory for tree_element");
+    new_element->set_prev(this);
 
-    tmp->set_prev(this);
-    tmp->set_right(nullptr);
-    tmp->set_left(nullptr);
+    this->set_right(new_element);
 
-    this->set_right(tmp);
-
-    return tmp;
+    return new_element;
 }
 
 tree_element::tree_element(data_type data, tree_element* prev, tree_element* left, tree_element* right) :

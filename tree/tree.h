@@ -71,6 +71,10 @@ public:
 
 	tree_element* add_to_right(tree_element* new_element);
 
+	void delete_subtree(tree_element* start_root);
+
+	bool check_numbers(tree_element* start_root);
+
 };
 
 class tree:tree_element
@@ -140,6 +144,11 @@ public:
 
 	void main_print(FILE* tex);
 
+	void optimizer_number(tree_element* start_root);
+	void optimizer_operator(tree_element* start_root);
+
+	int calculate(tree_element* start_root);
+	int get_number(tree_element* start_root);
 };
 
 
