@@ -16,13 +16,13 @@ bool is_free_objs = false;
     (root->get_data_type() == VARIABLE)
 
 #define IS_POW(root)                                            \
-    (Lroot(root)->get_data_type() == OPERATOR) && (Lroot(root)->get_data_value() == OP_POW_VAL)
+    ( (root->get_data_type() == OPERATOR) && (root->get_data_value() == OP_POW_VAL) )
 
 #define IS_MUL(root)                                            \
-    (Lroot(root)->get_data_type() == OPERATOR) && (Lroot(root)->get_data_value() == OP_TIMES_VAL)
+    ( (root->get_data_type() == OPERATOR) && (root->get_data_value() == OP_TIMES_VAL) )
 
 #define IS_DEL(root)                                            \
-    (Lroot(root)->get_data_type() == OPERATOR) && (Lroot(root)->get_data_value() == OP_DEL_VAL)
+    ( (root->get_data_type() == OPERATOR) && (root->get_data_value() == OP_DEL_VAL) )
 
 #define L_AND_R_NULL(root)                                      \
     ( (root->get_left() == nullptr) && (root->get_right() == nullptr) )
@@ -95,6 +95,34 @@ bool is_free_objs = false;
 
 #define GET_TYPE                                                \
     start_root->get_data_type()
+
+#define PRINT_L_PART_OF_MUL                                                                                         \
+    if ( IS_FUNCTION(Lroot(start_root))  || IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root)) ||       \
+        IS_POW(Lroot(start_root)) || IS_POW(Lroot(start_root)) || IS_MUL(Lroot(start_root)) || IS_DEL(Lroot(start_root)))   \
+    {                                                                                                               \
+        print_subtree(Lroot(start_root), buffer);                                                                   \
+        strcat(buffer, " \\cdot ");                                                                                 \
+    }                                                                                                               \
+    else                                                                                                            \
+    {                                                                                                               \
+        strcat(buffer, "\\left(");                                                                                  \
+        print_subtree(Lroot(start_root), buffer);                                                                   \
+        strcat(buffer, "\\right) \\cdot ");                                                                         \
+    }                                                                                           
+
+
+#define PRINT_R_PART_OF_MUL                                                                                         \
+    if (IS_FUNCTION(Rroot(start_root)) || IS_NUMBER(Rroot(start_root)) || IS_VARIABLE(Rroot(start_root)) ||         \
+        IS_POW(Rroot(start_root)) || IS_POW(Rroot(start_root)) || IS_MUL(Rroot(start_root)) || IS_DEL(Rroot(start_root)))         \
+    {                                                                                                               \
+        print_subtree(Rroot(start_root), buffer);                                                                   \
+    }                                                                                                               \
+    else                                                                                                            \
+    {                                                                                                               \
+        strcat(buffer, "\\left(");                                                                                  \
+        print_subtree(Rroot(start_root), buffer);                                                                   \
+        strcat(buffer, "\\right)");                                                                                 \
+    }                                                                               
 
 
 int hm_elements(tree_element* root)
@@ -681,35 +709,8 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
             {
                 case OP_TIMES_VAL:
                 {
-                    if ( IS_FUNCTION(Lroot(start_root))  || (IS_NUMBER(Lroot(start_root)) || IS_VARIABLE(Lroot(start_root))) || 
-                        (IS_POW(start_root)) || (IS_MUL(start_root)) || (IS_DEL(start_root)) )
-                    {
-                        print_subtree(Lroot(start_root), buffer);
-                        strcat(buffer, " \\cdot ");
-                    }
-                    else
-                    {
-                        strcat(buffer, "\\left(");
-                        print_subtree(Lroot(start_root), buffer);
-                        strcat(buffer, "\\right) \\cdot ");
-                    }
-                                // На 1 if заменить
-                    if ( IS_FUNCTION(Rroot(start_root)) )
-                        print_subtree(Rroot(start_root), buffer);
-                    else if ( IS_NUMBER(Rroot(start_root)) || IS_VARIABLE(Rroot(start_root)) )
-                        print_subtree(Rroot(start_root), buffer);
-                    else if ((Rroot(start_root)->get_data_type() == OPERATOR) && (Rroot(start_root)->get_data_value() == OP_POW_VAL))
-                        print_subtree(Rroot(start_root), buffer);
-                    else if ((Rroot(start_root)->get_data_type() == OPERATOR) && (Rroot(start_root)->get_data_value() == OP_TIMES_VAL))
-                        print_subtree(Rroot(start_root), buffer);
-                    else if ((Rroot(start_root)->get_data_type() == OPERATOR) && (Rroot(start_root)->get_data_value() == OP_DEL_VAL))
-                        print_subtree(Rroot(start_root), buffer);
-                    else
-                    {
-                        strcat(buffer, "\\left(");
-                        print_subtree(Rroot(start_root), buffer);
-                        strcat(buffer, "\\right)");
-                    }
+                    PRINT_L_PART_OF_MUL;
+                    PRINT_R_PART_OF_MUL;
 
                     break;
                 }
@@ -724,7 +725,15 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
                 }
                 case OP_POW_VAL:
                 {
-                    print_subtree(Lroot(start_root), buffer);
+                    if(IS_NUMBER(Lroot(start_root)))
+                        print_subtree(Lroot(start_root), buffer);
+                    else
+                    {
+                        strcat(buffer, "\\left(");
+                        print_subtree(Lroot(start_root), buffer);
+                        strcat(buffer, "\\right)");
+                    }
+
                     strcat(buffer, "^{");
                     print_subtree(Rroot(start_root), buffer);
                     strcat(buffer, "} ");
@@ -1139,24 +1148,44 @@ tree_element* tree::differenciate(tree_element* start_root)
                     fprintf(tex_, get_formula(Rroot(start_root)));
 
                     tree_element* right_dif = dR;
-                    fprintf(tex_, "Я попробую взять сам, в этом мне поможет баночка охоты крепкого:\n");
+                    fprintf(tex_, "Остальную часть я попробую взять сам, в этом мне поможет баночка охоты крепкого. *Буль-Буль*, получаем что-то такое:\n");
                     fprintf(tex_, get_formula(right_dif));
 
                     return ADDITION(MULTIPLY(left_dif, copyR), MULTIPLY(right_dif, copyL));
                 }
                 case OP_POW_VAL:
-                    return EXPONENTIATION(differenciate(create_root(CR_MUL, copyR, create_root(CR_LN, copyL))), copyF);
-                
+                {
+                    fprintf(tex_, "Чтобы получить ответ необходимо сделать сложный мув, а именно взять эту производную:\n");
+                    fprintf(tex_, get_formula(start_root));
+
+                    fprintf(tex_, "Степень-степень-степень, что же делать с этим? Для этого заглянем в АнтиДемидовича, том 1, страница 112, примеры 1-2\n");
+                    fprintf(tex_, "\nНо чтобы не париться с различными случаями можно ее взять в обшем случае:\n\n"
+                        "  \\begin{equation}\n"
+                        "  f(x)^{g(x)} = e^{g(x)\\cdot ln(f(x))}  = f(x)^{g(x)} \\cdot \\left(g(x)\\cdot ln(f(x)) \\right)^{'} =  \n"
+                        " \\end{equation} \\\\");
+                    
+                    fprintf(tex_, "Значит нужно рассчитать следующую производную:\n\n");
+
+                    tree_element* deriv_part = create_root(CR_MUL, copyR, create_root(CR_LN, copyL));
+                    fprintf(tex_, get_formula(deriv_part));
+
+                    tree_element* derivative = differenciate(deriv_part);
+                    fprintf(tex_, "В итоге получаем следующим результат:\n");
+                    fprintf(tex_, get_formula(derivative));
+                    
+                    return EXPONENTIATION(derivative, copyF);
+                }
                 default:
                     PRINT_UNDEFINE_OP_VALUE;
             }
             break;
         }
         case NUMBER:
-            //fprintf(tex_, "Ссылаясь на 2 том Кудрявцева, производная от константы = 0:");
+            fprintf(tex_, "Ссылаясь на 2 том Кудрявцева, производная от константы = $e^{i\\pi} + 1 = 0$.\n\n");
             return CR_NUMBER(0);
 
         case VARIABLE:
+            fprintf(tex_, "В свою же очередь производная от переменной = $- \\cos(\\pi) + \\sin(0) = 1$.\n\n");
             return CR_NUMBER(1);
         case FUNCTION:
         {
