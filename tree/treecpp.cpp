@@ -793,7 +793,7 @@ void tree::print_subtree(tree_element* start_root, char* buffer)
     return;
 }
 
-void tree::make_article()
+void tree::make_article(const char* name_of_file)
 {
     assert(this && "Can't do article without tree");
 
@@ -820,9 +820,22 @@ void tree::make_article()
     system("del main.tex");
     system("ren temp_main.tex main.tex");
     system("pdflatex main.tex");
-    system("start main.pdf");
 
-   
+    char* sys1 = new char[60]{0};
+
+    strcat(sys1, "ren main.pdf ");
+    strcat(sys1, name_of_file);
+    system(sys1);
+
+    char* sys2 = new char[50]{ 0 };
+    strcat(sys2, "start ");
+    strcat(sys2, name_of_file);
+    system(sys2);
+    //system("start main.pdf");
+    
+    delete[] sys1;
+    delete[] sys2;
+
     return;
 
 }
@@ -850,7 +863,7 @@ void tree::main_print(FILE* tex)
     new_tree->set_root(new_tree_root);
     new_tree->objs_ = objs_;
 
-    new_tree->show_tree();
+    new_tree->show_tree("diff_tree");
 
 
     fprintf(tex, "После двух бессонных ночей, шести пачек вискаса и бутылки охоты крепкого"
@@ -865,14 +878,14 @@ void tree::main_print(FILE* tex)
     fprintf(tex, "Но данное выражение какое-то некрасивое, поэтому давайте его преобразуем к следующему виду:\n");
 
     optimizer_number(new_tree->get_root());
-    new_tree->show_tree();
+    new_tree->show_tree("lvl_1_of_optimization");
 
 
     optimizer_operator(new_tree->get_root());
-    new_tree->show_tree();
+    new_tree->show_tree("lvl_2_of_optimization");
     
     optimizer_operator(new_tree->get_root());
-    new_tree->show_tree();
+    new_tree->show_tree("lvl_3_of_optimization");
 
 
     char* formula3 = get_formula(new_tree->get_root());
@@ -1525,16 +1538,64 @@ void tree::graphviz_dump(const char* dumpfile_name) const
     return;
 }
 
-void tree::show_tree() const
+void tree::show_tree(const char* name_of_file) const
 {
-    graphviz_beauty_dump("beauty_tree.dot");
+    char* dot_name = new char[50]{ 0 };
+    strcat(dot_name, name_of_file);
+    strcat(dot_name, ".dot");
 
-    system("iconv.exe -t UTF-8 -f  CP1251 < beauty_tree.dot > beauty_tree_temp.dot");
-    system("dot beauty_tree_temp.dot -Tpdf -o beauty_dump.pdf");
-    system("del beauty_tree.dot");
-    system("ren beauty_tree_temp.dot beauty_tree.dot");
+    char* pdf_name = new char[50]{ 0 };
+    strcat(pdf_name, name_of_file);
+    strcat(pdf_name, ".pdf");
 
-    system("beauty_dump.pdf");
+    graphviz_beauty_dump(dot_name);
+
+    char* sys1 = new char[100]{ 0 };
+    strcat(sys1, "iconv.exe -t UTF-8 -f  CP1251 < ");
+    strcat(sys1, dot_name);
+    strcat(sys1, " > TEMP_176831.dot");
+
+    //system("iconv.exe -t UTF-8 -f  CP1251 < beauty_tree.dot > beauty_tree_temp.dot");
+    system(sys1);
+
+
+    char* sys2 = new char[100]{ 0 };
+    strcat(sys2, "dot TEMP_176831.dot  -Tpdf -o ");
+    strcat(sys2, pdf_name);
+    //system("dot beauty_tree_temp.dot -Tpdf -o beauty_dump.pdf");
+    system(sys2);
+    
+
+
+    char* sys3 = new char[100]{ 0 };
+    strcat(sys3, "del ");
+    strcat(sys3, dot_name);
+    //system("del beauty_tree.dot");
+    system(sys3);
+
+
+
+
+    char* sys4 = new char[100]{ 0 };
+    strcat(sys4, "ren TEMP_176831.dot ");
+    strcat(sys4, dot_name);
+    //system("ren beauty_tree_temp.dot beauty_tree.dot");
+    system(sys4);
+    
+    char* sys5 = new char[50]{0};
+    strcat(sys5, pdf_name);
+    //system("beauty_dump.pdf");
+    system(sys5);
+
+
+    delete[] dot_name;
+    delete[] pdf_name;
+    delete[] sys1;
+    delete[] sys2;
+    delete[] sys3;
+    delete[] sys4;
+    delete[] sys5;
+
 }
 
 void tree::graphviz_beauty_dump(const char* dumpfile_name) const
@@ -1706,7 +1767,7 @@ void tree::fill_tree(struct Objects* main_object, bool need_print)
     root_ = get_expression();
 
     if(need_print)
-        show_tree();
+        show_tree("start_tree");
 
     return;
 }

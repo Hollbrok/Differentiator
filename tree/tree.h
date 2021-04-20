@@ -119,7 +119,7 @@ public:
 		const;
 
 
-	void show_tree() const;
+	void show_tree(const char* name_of_file = "beauty_dump") const;
 
 	void fill_tree(Objects* main_object, bool need_print = false);
 
@@ -137,7 +137,7 @@ public:
 
 	tree_element* differenciate(tree_element* new_root);
 
-	void make_article();
+	void make_article(const char* name_of_file = "Greek.pdf");
 
 	void print_subtree(tree_element* start_root, char* buffer);
 	char* get_formula(tree_element* start_root);
